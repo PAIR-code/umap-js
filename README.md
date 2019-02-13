@@ -63,3 +63,4 @@ The UMAP constructor can accept a number of parameters:
 yarn test
 ```
 
+**This is not an officially supported Google product**
