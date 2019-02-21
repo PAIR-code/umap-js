@@ -24,7 +24,7 @@ describe('UMAP', () => {
     random = () => prng.next();
   });
 
-  test.only('UMAP fit 2d synchronous method', () => {
+  test('UMAP fit 2d synchronous method', () => {
     const umap = new UMAP({ random, nComponents: 2 });
     const embedding = umap.fit(testData);
     expect(embedding).toEqual(testResults2D);
@@ -92,4 +92,3 @@ describe('UMAP', () => {
     expect(umap['nearestNeighbors']).toBeCalledTimes(0);
   });
 });
-

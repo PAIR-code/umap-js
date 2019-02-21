@@ -21,10 +21,9 @@ describe('umap nnDescent methods', () => {
   const prando = new Prando(42);
   const random = () => prando.next();
 
-  test.only('returns a nearest neighbors function', () => {
+  test('returns a nearest neighbors function', () => {
     const nnDescentFn = nnDescent.makeNNDescent(euclidean, random);
 
     expect(nnDescentFn instanceof Function).toBe(true);
   });
 });
-
