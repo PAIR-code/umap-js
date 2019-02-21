@@ -13,6 +13,12 @@ There are a few important differences between the python implementation and the 
 
 ### Usage
 
+#### Installation
+
+```sh
+yarn add umap-js
+```
+
 #### Synchronous fitting
 
 ```typescript
@@ -46,7 +52,7 @@ const embedding = umap.getEmbedding();
 
 #### Parameters
 
-The UMAP constructor can accept a number of parameters:
+The UMAP constructor can accept a number of parameters via a `UMAPParameters` object:
 
 | Parameter     | Description                                                           | default                  |
 | ------------- | --------------------------------------------------------------------- | ------------------------ |
@@ -54,6 +60,14 @@ The UMAP constructor can accept a number of parameters:
 | `nEpochs`     | The number of epochs to optimize embeddings via SGD                   | (computed automatically) |
 | `nNeigbors`   | The number of nearest neigbors to construct the fuzzy manifold        | 15                       |
 | `random`      | A pseudo-random-number generator for controlling stochastic processes | `Math.random`            |
+
+```typescript
+const umap = new UMAP({
+  nComponents: 2,
+  nEpochs: 400,
+  nNeighbors: 15,
+});
+```
 
 ### Testing
 

@@ -1,1 +1,1 @@
-export { UMAP } from './umap';
+export { UMAP, UMAPParameters } from './umap';
