@@ -69,7 +69,7 @@ export function norm(vec: number[]) {
  * Creates an empty array (filled with undefined)
  */
 export function empty(n: number): undefined[] {
-  const output = [];
+  const output: undefined[] = [];
   for (let i = 0; i < n; i++) {
     output.push(undefined);
   }
@@ -141,4 +141,3 @@ export function max2d(input: number[][]): number {
   }
   return max;
 }
-

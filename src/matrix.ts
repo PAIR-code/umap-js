@@ -67,7 +67,7 @@ export class SparseMatrix {
       this.values.push(value);
       this.entries.set(key, this.values.length - 1);
     } else {
-      const index = this.entries.get(key);
+      const index = this.entries.get(key)!;
       this.values[index] = value;
     }
   }
@@ -76,7 +76,7 @@ export class SparseMatrix {
     this.checkDims(row, col);
     const key = this.makeKey(row, col);
     if (this.entries.has(key)) {
-      const index = this.entries.get(key);
+      const index = this.entries.get(key)!;
       return this.values[index];
     } else {
       return defaultValue;
@@ -102,7 +102,7 @@ export class SparseMatrix {
   }
 
   map(fn: (value: number, row: number, col: number) => number): SparseMatrix {
-    let vals = [];
+    let vals: number[] = [];
     for (let i = 0; i < this.values.length; i++) {
       vals.push(fn(this.values[i], this.rows[i], this.cols[i]));
     }
@@ -228,4 +228,3 @@ function elementWise(
   const dims = [a.nRows, a.nCols];
   return new SparseMatrix(rows, cols, vals, dims);
 }
-

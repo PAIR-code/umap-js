@@ -139,4 +139,3 @@ export function makeNNDescent(distanceFn: DistanceFn, random: () => number) {
     return sorted;
   };
 }
-

@@ -263,17 +263,17 @@ function recursiveFlatten(
 
     // TODO: Triple check this operation corresponds to
     // indices[leafNum : tree.indices.shape[0]] = tree.indices
-    indices[leafNum].splice(0, tree.indices.length, ...tree.indices);
+    indices[leafNum].splice(0, tree.indices!.length, ...tree.indices!);
     leafNum += 1;
     return { nodeNum, leafNum };
   } else {
-    hyperplanes[nodeNum] = tree.hyperplane;
-    offsets[nodeNum] = tree.offset;
+    hyperplanes[nodeNum] = tree.hyperplane!;
+    offsets[nodeNum] = tree.offset!;
     children[nodeNum][0] = nodeNum + 1;
     const oldNodeNum = nodeNum;
 
     let res = recursiveFlatten(
-      tree.leftChild,
+      tree.leftChild!,
       hyperplanes,
       offsets,
       children,
@@ -287,7 +287,7 @@ function recursiveFlatten(
     children[oldNodeNum][1] = nodeNum + 1;
 
     res = recursiveFlatten(
-      tree.rightChild,
+      tree.rightChild!,
       hyperplanes,
       offsets,
       children,
@@ -311,7 +311,7 @@ function numLeaves(tree: RandomProjectionTreeNode): number {
   if (tree.isLeaf) {
     return 1;
   } else {
-    return numLeaves(tree.leftChild) + numLeaves(tree.rightChild!);
+    return numLeaves(tree.leftChild!) + numLeaves(tree.rightChild!);
   }
 }
 
@@ -326,13 +326,12 @@ function numLeaves(tree: RandomProjectionTreeNode): number {
  */
 export function makeLeafArray(rpForest: FlatTree[]): number[][] {
   if (rpForest.length > 0) {
-    const output = [];
+    const output: number[][] = [];
     for (let tree of rpForest) {
-      output.push(...tree.indices);
+      output.push(...tree.indices!);
     }
     return output;
   } else {
     return [[-1]];
   }
 }
-

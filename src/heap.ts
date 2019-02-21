@@ -73,7 +73,7 @@ export function makeHeap(nPoints: number, size: number): Heap {
     });
   };
 
-  const heap = [];
+  const heap: Heap = [];
   heap.push(makeArrays(-1));
   heap.push(makeArrays(Infinity));
   heap.push(makeArrays(0));
@@ -123,7 +123,7 @@ export function heapPush(
   weight: number,
   index: number,
   flag: number
-) {
+): number {
   row = Math.floor(row);
   const indices = heap[0][row];
   const weights = heap[1][row];
@@ -185,6 +185,7 @@ export function heapPush(
   weights[i] = weight;
   indices[i] = index;
   isNew[i] = flag;
+  return 1;
 }
 
 /**
@@ -285,4 +286,3 @@ function siftDown(
     }
   }
 }
-

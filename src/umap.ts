@@ -108,8 +108,8 @@ export class UMAP {
   private knnDistances?: number[][];
 
   // Internal graph connectivity representation
-  private graph: matrix.SparseMatrix;
-  private data: Vectors;
+  private graph!: matrix.SparseMatrix;
+  private data!: Vectors;
   private isInitialized = false;
 
   // Projected embedding
@@ -256,7 +256,7 @@ export class UMAP {
     localConnectivity = 1.0,
     setOpMixRatio = 1.0
   ) {
-    const { nNeighbors, knnIndices, knnDistances } = this;
+    const { nNeighbors, knnIndices = [], knnDistances = [] } = this;
 
     const { sigmas, rhos } = this.smoothKNNDistance(
       knnDistances,
@@ -454,9 +454,9 @@ export class UMAP {
     });
 
     // Get graph data in ordered way...
-    const weights = [];
-    const head = [];
-    const tail = [];
+    const weights: number[] = [];
+    const head: number[] = [];
+    const tail: number[] = [];
     for (let i = 0; i < graph.nRows; i++) {
       for (let j = 0; j < graph.nCols; j++) {
         const value = graph.get(i, j);
@@ -771,4 +771,3 @@ function rDist(x: number[], y: number[]) {
   }
   return result;
 }
-
