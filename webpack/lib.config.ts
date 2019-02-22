@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as DtsBundleWebpack from 'dts-bundle-webpack';
 
 export default {
   mode: 'production',
@@ -22,4 +23,11 @@ export default {
     path: path.resolve(__dirname, '../lib'),
   },
   optimization: { minimize: false },
+  plugins: [
+    new DtsBundleWebpack({
+      name: 'umap-js',
+      main: 'dist/umap.d.ts',
+      out: '../lib/umap-js.d.ts',
+    }),
+  ],
 };
