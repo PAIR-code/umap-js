@@ -25,7 +25,7 @@ export default {
   optimization: { minimize: false },
   plugins: [
     new DtsBundleWebpack({
-      name: 'umap-js',
+      name: 'umap',
       main: 'dist/umap.d.ts',
       out: '../lib/umap-js.d.ts',
     }),
