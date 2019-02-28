@@ -105,6 +105,15 @@ export function ones(n: number): number[] {
 }
 
 /**
+ * Creates an array from a to b, of length len, inclusive
+ */
+export function linear(a: number, b: number, len: number): number[] {
+  return empty(len).map((_, i) => {
+    return a + i * ((b - a) / (len - 1));
+  });
+}
+
+/**
  * Returns the sum of an array
  */
 export function sum(input: number[]): number {

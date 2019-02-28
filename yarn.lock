@@ -1920,6 +1920,10 @@ is-accessor-descriptor@^1.0.0:
   dependencies:
     kind-of "^6.0.0"
 
+is-any-array@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/is-any-array/-/is-any-array-0.0.3.tgz#cbdd8c7189d47b53b050969245f4ef7e55550b9b"
+
 is-arrayish@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.2.1.tgz#77c99840527aa8ecb1a8ba697b80645a7a926a9d"
@@ -2894,6 +2898,39 @@ mkdirp@0.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
+
+ml-array-max@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ml-array-max/-/ml-array-max-1.1.1.tgz#0192a646853a5cd1085133def02c1271101ddd86"
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-min@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ml-array-min/-/ml-array-min-1.1.1.tgz#52bb6315325cd28e39b412282ef5a44416bd2e11"
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-rescale@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ml-array-rescale/-/ml-array-rescale-1.2.1.tgz#8fc10ef0472a3bf27602d6089e6f93a2fb7d9fe5"
+  dependencies:
+    is-any-array "^0.0.3"
+    ml-array-max "^1.1.1"
+    ml-array-min "^1.1.1"
+
+ml-levenberg-marquardt@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/ml-levenberg-marquardt/-/ml-levenberg-marquardt-1.0.3.tgz#7c63ba4a548cc50738a81e8338849fb585a1941b"
+  dependencies:
+    ml-matrix "^5.0.1"
+
+ml-matrix@^5.0.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-5.2.1.tgz#6cf2566f15c88bc06793dea78473804c4e6ab19e"
+  dependencies:
+    ml-array-max "^1.1.1"
+    ml-array-rescale "^1.2.1"
 
 move-concurrently@^1.0.1:
   version "1.0.1"

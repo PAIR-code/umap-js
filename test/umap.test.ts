@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { UMAP } from '../src/umap';
+import { UMAP, findABParams } from '../src/umap';
 import { testData, testResults2D, testResults3D } from './test_data';
 import Prando from 'prando';
 
@@ -90,5 +90,22 @@ describe('UMAP', () => {
     umap.fit(testData);
 
     expect(umap['nearestNeighbors']).toBeCalledTimes(0);
+  });
+
+  test('finds AB params using levenberg-marquardt', () => {
+    // The default parameters from the python implementation
+    const minDist = 0.1;
+    const spread = 1.0;
+
+    // The default results from the python sklearn curve-fitting algorithm
+    const a = 1.5769434603113077;
+    const b = 0.8950608779109733;
+    const epsilon = 0.01;
+
+    const params = findABParams(spread, minDist);
+    const diff = (x: number, y: number) => Math.abs(x - y);
+
+    expect(diff(params.a, a)).toBeLessThanOrEqual(epsilon);
+    expect(diff(params.b, b)).toBeLessThanOrEqual(epsilon);
   });
 });

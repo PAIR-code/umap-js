@@ -29,7 +29,9 @@
     "webpack": "^4.29.5",
     "webpack-cli": "^3.2.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ml-levenberg-marquardt": "^1.0.3"
+  },
   "publishConfig": {
     "registry": "https://wombat-dressing-room.appspot.com"
   }

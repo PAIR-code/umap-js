@@ -57,6 +57,7 @@ import * as matrix from './matrix';
 import * as nnDescent from './nn_descent';
 import * as tree from './tree';
 import * as utils from './utils';
+import * as LM from 'ml-levenberg-marquardt';
 
 export type DistanceFn = (x: Vector, y: Vector) => number;
 export type EpochCallback = (epoch: number) => boolean | void;
@@ -67,10 +68,50 @@ const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
 
 export interface UMAPParameters {
+  /**
+   * The effective minimum distance between embedded points. Smaller values
+   * will result in a more clustered/clumped embedding where nearby points
+   * on the manifold are drawn closer together, while larger values will
+   * result on a more even dispersal of points. The value should be set
+   * relative to the ``spread`` value, which determines the scale at which
+   * embedded points will be spread out.
+   */
+  minDist?: number;
+  /**
+   * The dimension of the space to embed into. This defaults to 2 to
+   * provide easy visualization, but can reasonably be set to any
+   * integer value in the range 2 to 100.
+   */
+
   nComponents?: number;
+  /**
+   * The number of training epochs to be used in optimizing the
+   * low dimensional embedding. Larger values result in more accurate
+   * embeddings. If None is specified a value will be selected based on
+   * the size of the input dataset (200 for large datasets, 500 for small).
+   */
+
   nEpochs?: number;
+  /**
+   * The size of local neighborhood (in terms of number of neighboring
+   * sample points) used for manifold approximation. Larger values
+   * result in more global views of the manifold, while smaller
+   * values result in more local data being preserved. In general
+   * values should be in the range 2 to 100.
+   */
+
   nNeighbors?: number;
+  /**
+   * The pseudo-random number generator used by the stochastic parts of the
+   * algorithm.
+   */
   random?: () => number;
+  /**
+   * The effective scale of embedded points. In combination with ``min_dist``
+   * this determines how clustered/clumped the embedded points are.
+   */
+
+  spread?: number;
 }
 
 /**
@@ -96,10 +137,12 @@ export interface UMAPParameters {
  *      step through each epoch of the SGD optimization
  */
 export class UMAP {
-  private nNeighbors = 15;
+  private minDist = 0.1;
   private nComponents = 2;
   private nEpochs = 0;
+  private nNeighbors = 15;
   private random = Math.random;
+  private spread = 1.0;
 
   private distanceFn: DistanceFn = euclidean;
 
@@ -117,9 +160,11 @@ export class UMAP {
   private optimizationState = new OptimizationState();
 
   constructor(params: UMAPParameters = {}) {
+    this.minDist = params.minDist || this.minDist;
     this.nComponents = params.nComponents || this.nComponents;
     this.nEpochs = params.nEpochs || this.nEpochs;
     this.nNeighbors = params.nNeighbors || this.nNeighbors;
+    this.spread = params.spread || this.spread;
     this.random = params.random || this.random;
   }
 
@@ -507,8 +552,7 @@ export class UMAP {
 
     // TODO -> Compute these values which are computed via a curve-fitting
     // routine in the python implementation.
-    const a = 1.5769434603113077;
-    const b = 0.8950608779109733;
+    const { a, b } = findABParams(this.spread, this.minDist);
 
     const dim = headEmbedding[0].length;
     const moveOther = headEmbedding.length === tailEmbedding.length;
@@ -770,4 +814,41 @@ function rDist(x: number[], y: number[]) {
     result += Math.pow(x[i] - y[i], 2);
   }
   return result;
+}
+
+/**
+ * Fit a, b params for the differentiable curve used in lower
+ * dimensional fuzzy simplicial complex construction. We want the
+ * smooth curve (from a pre-defined family with simple gradient) that
+ * best matches an offset exponential decay.
+ */
+export function findABParams(spread: number, minDist: number) {
+  const curve = ([a, b]) => (x: number) => {
+    return 1.0 / (1.0 + a * x ** (2 * b));
+  };
+
+  const xv = utils
+    .linear(0, spread * 3, 300)
+    .map(val => (val < minDist ? 1.0 : val));
+
+  const yv = utils.zeros(xv.length).map((val, index) => {
+    const gte = xv[index] >= minDist;
+    return gte ? Math.exp(-(xv[index] - minDist) / spread) : val;
+  });
+
+  const initialValues = [0.5, 0.5];
+  const data = { x: xv, y: yv };
+
+  // Default options for the algorithm (from github example)
+  const options = {
+    damping: 1.5,
+    initialValues,
+    gradientDifference: 10e-2,
+    maxIterations: 100,
+    errorTolerance: 10e-3,
+  };
+
+  const { parameterValues } = LM(data, curve, options);
+  const [a, b] = parameterValues as number[];
+  return { a, b };
 }
