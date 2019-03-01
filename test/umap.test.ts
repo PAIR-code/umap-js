@@ -140,7 +140,7 @@ describe('UMAP', () => {
    * indicate "clustering"
    */
   const checkClusters = (embeddings: number[][], labels: number[]) => {
-    const EXPECTED_DISTANCE_RATIO = 0.333;
+    const EXPECTED_DISTANCE_RATIO = 0.4;
     const distances = computeMeanDistances(embeddings);
     const overallMeanDistance = utils.mean(distances);
 
