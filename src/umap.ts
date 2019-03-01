@@ -550,8 +550,6 @@ export class UMAP {
     const nEpochs = this.getNEpochs();
     const nVertices = this.graph.nCols;
 
-    // TODO -> Compute these values which are computed via a curve-fitting
-    // routine in the python implementation.
     const { a, b } = findABParams(this.spread, this.minDist);
 
     const dim = headEmbedding[0].length;
