@@ -85,6 +85,10 @@ export class SparseMatrix {
     }
   }
 
+  getDims(): number[] {
+    return [this.nRows, this.nCols];
+  }
+
   getRows(): number[] {
     return [...this.rows];
   }
@@ -110,6 +114,21 @@ export class SparseMatrix {
     }
     const dims = [this.nRows, this.nCols];
     return new SparseMatrix(this.rows, this.cols, vals, dims);
+  }
+
+  /**
+   * Mutates the sparse matrix by removing all zero value entries.
+   */
+  eliminateZeros() {
+    const zeroIndices = new Set();
+    for (let i = 0; i < this.values.length; i++) {
+      if (this.values[i] === 0) zeroIndices.add(i);
+    }
+    const removeByZeroIndex = (_, index: number) => !zeroIndices.has(index);
+    this.values = this.values.filter(removeByZeroIndex);
+    this.rows = this.rows.filter(removeByZeroIndex);
+    this.cols = this.cols.filter(removeByZeroIndex);
+    return this;
   }
 
   toArray() {
@@ -157,7 +176,10 @@ export function identity(size: number[]): SparseMatrix {
 /**
  * Element-wise multiplication of two matrices
  */
-export function dotMultiply(a: SparseMatrix, b: SparseMatrix): SparseMatrix {
+export function pairwiseMultiply(
+  a: SparseMatrix,
+  b: SparseMatrix
+): SparseMatrix {
   return elementWise(a, b, (x, y) => x * y);
 }
 
@@ -182,6 +204,68 @@ export function multiplyScalar(a: SparseMatrix, scalar: number): SparseMatrix {
   return a.map((value: number) => {
     return value * scalar;
   });
+}
+
+/**
+ * Normalization of a sparse matrix.
+ */
+export function normalize(m: SparseMatrix, normType = NormType.l2) {
+  const normFn = normFns[normType];
+
+  const colsByRow = new Map<number, number[]>();
+  m.forEach((_, row, col) => {
+    const cols = colsByRow.get(row) || [];
+    cols.push(col);
+    colsByRow.set(row, cols);
+  });
+
+  const nextMatrix = new SparseMatrix([], [], [], m.getDims());
+
+  for (let rowIndex of colsByRow.keys()) {
+    const row = Number(rowIndex);
+    const cols = colsByRow.get(row)!;
+    const vals = cols.map(col => m.get(row, col));
+    const norm = normFn(vals);
+    for (let i = 0; i < norm.length; i++) {
+      nextMatrix.set(row, cols[i], norm[i]);
+    }
+  }
+
+  return nextMatrix;
+}
+
+/**
+ * Vector normalization functions
+ */
+type NormFns = { [key in NormType]: (v: number[]) => number[] };
+const normFns: NormFns = {
+  [NormType.max]: (xs: number[]) => {
+    let max = -Infinity;
+    for (let i = 0; i < xs.length; i++) {
+      max = xs[i] > max ? xs[i] : max;
+    }
+    return xs.map(x => x / max);
+  },
+  [NormType.l1]: (xs: number[]) => {
+    let sum = 0;
+    for (let i = 0; i < xs.length; i++) {
+      sum += xs[i];
+    }
+    return xs.map(x => x / sum);
+  },
+  [NormType.l2]: (xs: number[]) => {
+    let sum = 0;
+    for (let i = 0; i < xs.length; i++) {
+      sum += xs[i] ** 2;
+    }
+    return xs.map(x => Math.sqrt(x ** 2 / sum));
+  },
+};
+
+export const enum NormType {
+  max = 'max',
+  l1 = 'l1',
+  l2 = 'l2',
 }
 
 /**

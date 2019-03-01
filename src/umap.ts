@@ -63,6 +63,11 @@ export type DistanceFn = (x: Vector, y: Vector) => number;
 export type EpochCallback = (epoch: number) => boolean | void;
 export type Vector = number[];
 export type Vectors = Vector[];
+export const enum TargetMetric {
+  categorical = 'categorical',
+  l1 = 'l1',
+  l2 = 'l2',
+}
 
 const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
@@ -110,8 +115,31 @@ export interface UMAPParameters {
    * The effective scale of embedded points. In combination with ``min_dist``
    * this determines how clustered/clumped the embedded points are.
    */
-
   spread?: number;
+}
+
+export interface UMAPSupervisedParams {
+  /**
+   * The metric used to measure distance for a target array is using supervised
+   * dimension reduction. By default this is 'categorical' which will measure
+   * distance in terms of whether categories match or are different. Furthermore,
+   * if semi-supervised is required target values of -1 will be treated as
+   * unlabelled under the 'categorical' metric. If the target array takes
+   * continuous values (e.g. for a regression problem) then metric of 'l1'
+   * or 'l2' is probably more appropriate.
+   */
+  targetMetric?: TargetMetric;
+  /**
+   * Weighting factor between data topology and target topology. A value of
+   * 0.0 weights entirely on data, a value of 1.0 weights entirely on target.
+   * The default of 0.5 balances the weighting equally between data and target.
+   */
+  targetWeight?: number;
+  /**
+   * The number of nearest neighbors to use to construct the target simplcial
+   * set. Defaults to the `nearestNeighbors` parameter.
+   */
+  targetNNeighbors?: number;
 }
 
 /**
@@ -144,6 +172,11 @@ export class UMAP {
   private random = Math.random;
   private spread = 1.0;
 
+  // Supervised projection params
+  private targetMetric = TargetMetric.categorical;
+  private targetWeight = 0.5;
+  private targetNNeighbors = this.nNeighbors;
+
   private distanceFn: DistanceFn = euclidean;
 
   // KNN state (can be precomputed and supplied via initializeFit)
@@ -152,8 +185,11 @@ export class UMAP {
 
   // Internal graph connectivity representation
   private graph!: matrix.SparseMatrix;
-  private data!: Vectors;
+  private X!: Vectors;
   private isInitialized = false;
+
+  // Supervised projection labels / targets
+  private Y?: number[];
 
   // Projected embedding
   private embedding: number[][] = [];
@@ -164,8 +200,8 @@ export class UMAP {
     this.nComponents = params.nComponents || this.nComponents;
     this.nEpochs = params.nEpochs || this.nEpochs;
     this.nNeighbors = params.nNeighbors || this.nNeighbors;
-    this.spread = params.spread || this.spread;
     this.random = params.random || this.random;
+    this.spread = params.spread || this.spread;
   }
 
   /**
@@ -193,33 +229,47 @@ export class UMAP {
   }
 
   /**
+   * Initializes parameters needed for supervised projection.
+   */
+  setSupervisedProjection(Y: number[], params: UMAPSupervisedParams = {}) {
+    this.Y = Y;
+    this.targetMetric = params.targetMetric || this.targetMetric;
+    this.targetWeight = params.targetWeight || this.targetWeight;
+    this.targetNNeighbors = params.targetNNeighbors || this.targetNNeighbors;
+  }
+
+  /**
+   * Initializes umap with precomputed KNN indices and distances.
+   */
+  setPrecomputedKNN(knnIndices: number[][], knnDistances: number[][]) {
+    this.knnIndices = knnIndices;
+    this.knnDistances = knnDistances;
+  }
+
+  /**
    * Initializes fit by computing KNN and a fuzzy simplicial set, as well as
    * initializing the projected embeddings. Sets the optimization state ahead
    * of optimization steps. Returns the number of epochs to be used for the
    * SGD optimization.
    */
-  initializeFit(
-    X: Vectors,
-    knnIndices?: number[][],
-    knnDistances?: number[][]
-  ): number {
+  initializeFit(X: Vectors): number {
     // We don't need to reinitialize if we've already initialized for this data.
-    if (this.data === X && this.isInitialized) {
+    if (this.X === X && this.isInitialized) {
       return this.getNEpochs();
     }
 
-    this.data = X;
+    this.X = X;
 
-    if (knnIndices && knnDistances) {
-      this.knnIndices = knnIndices;
-      this.knnDistances = knnDistances;
-    } else {
+    if (!this.knnIndices && !this.knnDistances) {
       const knnResults = this.nearestNeighbors(X);
       this.knnIndices = knnResults.knnIndices;
       this.knnDistances = knnResults.knnDistances;
     }
 
-    this.graph = this.fuzzySimplicialSet(X);
+    this.graph = this.fuzzySimplicialSet(X, this.nNeighbors);
+
+    // Check if supervised projection, then adjust the graph.
+    this.processGraphForSupervisedProjection();
 
     const {
       head,
@@ -234,6 +284,30 @@ export class UMAP {
 
     this.isInitialized = true;
     return this.getNEpochs();
+  }
+
+  /**
+   * Checks if we're using supervised projection, then process the graph
+   * accordingly.
+   */
+  private processGraphForSupervisedProjection() {
+    const { Y, X } = this;
+    if (Y) {
+      if (Y.length !== X.length) {
+        throw new Error('Length of X and y must be equal');
+      }
+
+      if (this.targetMetric === TargetMetric.categorical) {
+        const lt = this.targetWeight < 1.0;
+        const farDist = lt ? 2.5 * (1.0 / (1.0 - this.targetWeight)) : 1.0e12;
+        this.graph = this.categoricalSimplicialSetIntersection(
+          this.graph,
+          Y,
+          farDist
+        );
+      }
+      // TODO (andycoenen@): add non-categorical supervised embeddings.
+    }
   }
 
   /**
@@ -298,10 +372,11 @@ export class UMAP {
    */
   private fuzzySimplicialSet(
     X: Vectors,
+    nNeighbors: number,
     localConnectivity = 1.0,
     setOpMixRatio = 1.0
   ) {
-    const { nNeighbors, knnIndices = [], knnDistances = [] } = this;
+    const { knnIndices = [], knnDistances = [] } = this;
 
     const { sigmas, rhos } = this.smoothKNNDistance(
       knnDistances,
@@ -320,7 +395,7 @@ export class UMAP {
     const sparseMatrix = new matrix.SparseMatrix(rows, cols, vals, size);
 
     const transpose = matrix.transpose(sparseMatrix);
-    const prodMatrix = matrix.dotMultiply(sparseMatrix, transpose);
+    const prodMatrix = matrix.pairwiseMultiply(sparseMatrix, transpose);
 
     const a = matrix.subtract(matrix.add(sparseMatrix, transpose), prodMatrix);
     const b = matrix.multiplyScalar(a, setOpMixRatio);
@@ -328,6 +403,31 @@ export class UMAP {
     const result = matrix.add(b, c);
 
     return result;
+  }
+
+  /**
+   * Combine a fuzzy simplicial set with another fuzzy simplicial set
+   * generated from categorical data using categorical distances. The target
+   * data is assumed to be categorical label data (a vector of labels),
+   * and this will update the fuzzy simplicial set to respect that label data.
+   */
+  private categoricalSimplicialSetIntersection(
+    simplicialSet: matrix.SparseMatrix,
+    target: number[],
+    farDist: number
+  ) {
+    const unknownDist = 1.0;
+
+    const intersection = fastIntersection(
+      simplicialSet,
+      target,
+      unknownDist,
+      farDist
+    );
+
+    intersection.eliminateZeros();
+
+    return resetLocalConnectivity(intersection);
   }
 
   /**
@@ -849,4 +949,43 @@ export function findABParams(spread: number, minDist: number) {
   const { parameterValues } = LM(data, curve, options);
   const [a, b] = parameterValues as number[];
   return { a, b };
+}
+
+/**
+ * Under the assumption of categorical distance for the intersecting
+ * simplicial set perform a fast intersection.
+ */
+export function fastIntersection(
+  graph: matrix.SparseMatrix,
+  target: number[],
+  unknownDist: number,
+  farDist: number
+) {
+  return graph.map((value, row, col) => {
+    if (target[row] === -1 || target[col] === -1) {
+      return value * Math.exp(-unknownDist);
+    } else if (target[row] !== target[col]) {
+      return value * Math.exp(-farDist);
+    } else {
+      return value;
+    }
+  });
+}
+
+/**
+ * Reset the local connectivity requirement -- each data sample should
+ * have complete confidence in at least one 1-simplex in the simplicial set.
+ * We can enforce this by locally rescaling confidences, and then remerging the
+ * different local simplicial sets together.
+ */
+export function resetLocalConnectivity(simplicialSet: matrix.SparseMatrix) {
+  simplicialSet = matrix.normalize(simplicialSet, matrix.NormType.max);
+  const transpose = matrix.transpose(simplicialSet);
+  const prodMatrix = matrix.pairwiseMultiply(transpose, simplicialSet);
+  simplicialSet = matrix.add(
+    simplicialSet,
+    matrix.subtract(transpose, prodMatrix)
+  );
+  simplicialSet.eliminateZeros();
+  return simplicialSet;
 }
