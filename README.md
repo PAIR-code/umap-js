@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/PAIR-code/umap-js.svg?branch=master)](https://travis-ci.org/PAIR-code/umap-js)
+
 # UMAP-JS
 
 This is a JavaScript reimplementation of UMAP from the python implementation found at https://github.com/lmcinnes/umap.
