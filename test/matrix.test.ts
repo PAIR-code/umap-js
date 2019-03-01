@@ -79,7 +79,7 @@ describe('sparse matrix', () => {
     const dims = [2, 2];
     const matrix = new SparseMatrix(rows, cols, vals, dims);
 
-    const entries = [];
+    const entries: number[][] = [];
     matrix.forEach((value, row, col) => {
       entries.push([value, row, col]);
     });
@@ -131,4 +131,3 @@ describe('helper methods', () => {
     expect(X.toArray()).toEqual([[3, 6], [9, 12]]);
   });
 });
-

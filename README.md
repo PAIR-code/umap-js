@@ -54,12 +54,14 @@ const embedding = umap.getEmbedding();
 
 The UMAP constructor can accept a number of parameters via a `UMAPParameters` object:
 
-| Parameter     | Description                                                           | default                  |
-| ------------- | --------------------------------------------------------------------- | ------------------------ |
-| `nComponents` | The number of components (dimensions) to project the data to          | 2                        |
-| `nEpochs`     | The number of epochs to optimize embeddings via SGD                   | (computed automatically) |
-| `nNeigbors`   | The number of nearest neigbors to construct the fuzzy manifold        | 15                       |
-| `random`      | A pseudo-random-number generator for controlling stochastic processes | `Math.random`            |
+| Parameter     | Description                                                                                                                         | default                  |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `nComponents` | The number of components (dimensions) to project the data to                                                                        | 2                        |
+| `nEpochs`     | The number of epochs to optimize embeddings via SGD                                                                                 | (computed automatically) |
+| `nNeigbors`   | The number of nearest neigbors to construct the fuzzy manifold                                                                      | 15                       |
+| `minDist`     | The effective minimum distance between embedded points, used with `spread` to control the clumped/dispersed nature of the embedding | 0.1                      |
+| `spread`      | The effective scale of embedded points, used with `minDist` to control the clumped/dispersed nature of the embedding                | 1.0                      |
+| `random`      | A pseudo-random-number generator for controlling stochastic processes                                                               | `Math.random`            |
 
 ```typescript
 const umap = new UMAP({

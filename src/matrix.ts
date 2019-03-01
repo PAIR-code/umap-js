@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import * as utils from './utils';
+
 /**
  * Internal 2-dimensional sparse matrix class
  */
@@ -111,10 +113,9 @@ export class SparseMatrix {
   }
 
   toArray() {
-    const rows: number[][] = [...new Array(this.nRows)];
+    const rows: undefined[] = utils.empty(this.nRows);
     const output = rows.map(() => {
-      const cols = [...new Array(this.nCols)];
-      return cols.map(() => 0);
+      return utils.zeros(this.nCols);
     });
     for (let i = 0; i < this.values.length; i++) {
       output[this.rows[i]][this.cols[i]] = this.values[i];

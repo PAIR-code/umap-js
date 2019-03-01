@@ -63,6 +63,11 @@ describe('umap utils', () => {
     expect(results).toEqual([1, 1, 1]);
   });
 
+  test('linear function', () => {
+    const results = utils.linear(0, 5, 5);
+    expect(results).toEqual([0, 1.25, 2.5, 3.75, 5]);
+  });
+
   test('sum function', () => {
     const results = utils.sum([1, 2, 3]);
     expect(results).toEqual(6);
@@ -83,4 +88,3 @@ describe('umap utils', () => {
     expect(results).toEqual(6);
   });
 });
-
