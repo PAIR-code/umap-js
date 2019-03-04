@@ -53,6 +53,8 @@ limitations under the License.
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { graphBeforeIntersection } from '../test/python_compat/umap-py_data';
+
 import * as matrix from './matrix';
 import * as nnDescent from './nn_descent';
 import * as tree from './tree';
@@ -298,6 +300,8 @@ export class UMAP {
       }
 
       if (this.targetMetric === TargetMetric.categorical) {
+        console.log('🔥graph before', JSON.stringify(this.graph.toArray()[0]));
+
         const lt = this.targetWeight < 1.0;
         const farDist = lt ? 2.5 * (1.0 / (1.0 - this.targetWeight)) : 1.0e12;
         this.graph = this.categoricalSimplicialSetIntersection(
@@ -305,6 +309,7 @@ export class UMAP {
           Y,
           farDist
         );
+        console.log('🔥graph target', JSON.stringify(this.graph.toArray()[0]));
       }
       // TODO (andycoenen@): add non-categorical supervised embeddings.
     }
@@ -418,14 +423,16 @@ export class UMAP {
   ) {
     const unknownDist = 1.0;
 
-    const intersection = fastIntersection(
+    let intersection = fastIntersection(
       simplicialSet,
       target,
       unknownDist,
       farDist
     );
 
-    intersection.eliminateZeros();
+    console.log('🐈', intersection.get(0, 10));
+    intersection = matrix.eliminateZeros(intersection);
+    console.log('🐈', intersection.get(0, 10));
 
     return resetLocalConnectivity(intersection);
   }
@@ -979,13 +986,19 @@ export function fastIntersection(
  * different local simplicial sets together.
  */
 export function resetLocalConnectivity(simplicialSet: matrix.SparseMatrix) {
+  console.log('🍠 prenormalize', JSON.stringify(simplicialSet.toArray()[0]));
+  console.log('🍠 get', simplicialSet.get(0, 10));
+
   simplicialSet = matrix.normalize(simplicialSet, matrix.NormType.max);
+
+  console.log('🍠 normalize', JSON.stringify(simplicialSet.toArray()[0]));
+
   const transpose = matrix.transpose(simplicialSet);
   const prodMatrix = matrix.pairwiseMultiply(transpose, simplicialSet);
   simplicialSet = matrix.add(
     simplicialSet,
     matrix.subtract(transpose, prodMatrix)
   );
-  simplicialSet.eliminateZeros();
+  // simplicialSet.eliminateZeros();
   return simplicialSet;
 }

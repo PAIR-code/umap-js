@@ -116,21 +116,6 @@ export class SparseMatrix {
     return new SparseMatrix(this.rows, this.cols, vals, dims);
   }
 
-  /**
-   * Mutates the sparse matrix by removing all zero value entries.
-   */
-  eliminateZeros() {
-    const zeroIndices = new Set();
-    for (let i = 0; i < this.values.length; i++) {
-      if (this.values[i] === 0) zeroIndices.add(i);
-    }
-    const removeByZeroIndex = (_, index: number) => !zeroIndices.has(index);
-    this.values = this.values.filter(removeByZeroIndex);
-    this.rows = this.rows.filter(removeByZeroIndex);
-    this.cols = this.cols.filter(removeByZeroIndex);
-    return this;
-  }
-
   toArray() {
     const rows: undefined[] = utils.empty(this.nRows);
     const output = rows.map(() => {
@@ -207,6 +192,27 @@ export function multiplyScalar(a: SparseMatrix, scalar: number): SparseMatrix {
 }
 
 /**
+ * Returns a new matrix with zero entries removed.
+ */
+export function eliminateZeros(m: SparseMatrix) {
+  const zeroIndices = new Set();
+  const values = m.getValues();
+  const rows = m.getRows();
+  const cols = m.getCols();
+  for (let i = 0; i < values.length; i++) {
+    if (values[i] === 0) {
+      zeroIndices.add(i);
+    }
+  }
+  const removeByZeroIndex = (_, index: number) => !zeroIndices.has(index);
+  const nextValues = values.filter(removeByZeroIndex);
+  const nextRows = rows.filter(removeByZeroIndex);
+  const nextCols = cols.filter(removeByZeroIndex);
+
+  return new SparseMatrix(nextRows, nextCols, nextValues, m.getDims());
+}
+
+/**
  * Normalization of a sparse matrix.
  */
 export function normalize(m: SparseMatrix, normType = NormType.l2) {
@@ -221,9 +227,9 @@ export function normalize(m: SparseMatrix, normType = NormType.l2) {
 
   const nextMatrix = new SparseMatrix([], [], [], m.getDims());
 
-  for (let rowIndex of colsByRow.keys()) {
-    const row = Number(rowIndex);
-    const cols = colsByRow.get(row)!;
+  for (let row of colsByRow.keys()) {
+    const cols = colsByRow.get(row)!.sort();
+
     const vals = cols.map(col => m.get(row, col));
     const norm = normFn(vals);
     for (let i = 0; i < norm.length; i++) {

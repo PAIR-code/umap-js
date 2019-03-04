@@ -40,11 +40,17 @@ export function randomNormal2d(
     });
 }
 
+import * as MersenneTwister from './mersenne';
+
+const r = new MersenneTwister();
+r.init_genrand(42);
+
 /**
  * Simple random integer function
  */
 export function tauRandInt(n: number, random = Math.random) {
   return Math.floor(random() * n);
+  // return r.genrand_int32() % n;
 }
 
 /**
@@ -52,6 +58,8 @@ export function tauRandInt(n: number, random = Math.random) {
  */
 export function tauRand(random = Math.random) {
   return random();
+  // const integer = tauRandInt(0x7fffffff * 2);
+  // return integer / (0x7fffffff * 2);
 }
 
 /**
