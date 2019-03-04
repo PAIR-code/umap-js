@@ -1,11 +1,8 @@
 /* Copyright 2019 Google Inc. All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -414,19 +411,16 @@ export class UMAP {
   private categoricalSimplicialSetIntersection(
     simplicialSet: matrix.SparseMatrix,
     target: number[],
-    farDist: number
+    farDist: number,
+    unknownDist = 1.0
   ) {
-    const unknownDist = 1.0;
-
-    const intersection = fastIntersection(
+    let intersection = fastIntersection(
       simplicialSet,
       target,
       unknownDist,
       farDist
     );
-
-    intersection.eliminateZeros();
-
+    intersection = matrix.eliminateZeros(intersection);
     return resetLocalConnectivity(intersection);
   }
 
@@ -958,8 +952,8 @@ export function findABParams(spread: number, minDist: number) {
 export function fastIntersection(
   graph: matrix.SparseMatrix,
   target: number[],
-  unknownDist: number,
-  farDist: number
+  unknownDist = 1.0,
+  farDist = 5.0
 ) {
   return graph.map((value, row, col) => {
     if (target[row] === -1 || target[col] === -1) {
@@ -986,6 +980,5 @@ export function resetLocalConnectivity(simplicialSet: matrix.SparseMatrix) {
     simplicialSet,
     matrix.subtract(transpose, prodMatrix)
   );
-  simplicialSet.eliminateZeros();
-  return simplicialSet;
+  return matrix.eliminateZeros(simplicialSet);
 }

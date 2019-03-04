@@ -1,11 +1,8 @@
 /* Copyright 2019 Google Inc. All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +18,7 @@ import {
   add,
   subtract,
   multiplyScalar,
+  eliminateZeros,
   normalize,
   NormType,
 } from '../src/matrix';
@@ -42,7 +40,7 @@ describe('sparse matrix', () => {
   test('sparse matrix has get / set methods', () => {
     const rows = [0, 0, 1, 1];
     const cols = [0, 1, 0, 1];
-    const vals = [1, 2];
+    const vals = [1, 2, 3, 4];
     const dims = [2, 2];
     const matrix = new SparseMatrix(rows, cols, vals, dims);
 
@@ -88,19 +86,6 @@ describe('sparse matrix', () => {
 
     expect(entries).toEqual([[1, 0, 0], [3, 1, 0]]);
   });
-
-  test('sparse matrix has eliminateZeros method', () => {
-    const rows = [0, 1, 1];
-    const cols = [0, 0, 1];
-    const vals = [0, 1, 3];
-    const dims = [2, 2];
-    const matrix = new SparseMatrix(rows, cols, vals, dims);
-    matrix.eliminateZeros();
-
-    expect(matrix.getValues()).toEqual([1, 3]);
-    expect(matrix.getRows()).toEqual([1, 1]);
-    expect(matrix.getCols()).toEqual([0, 1]);
-  });
 });
 
 describe('helper methods', () => {
@@ -144,6 +129,24 @@ describe('helper methods', () => {
   test('scalar multiply method', () => {
     const X = multiplyScalar(A, 3);
     expect(X.toArray()).toEqual([[3, 6], [9, 12]]);
+  });
+
+  test('eliminateZeros method', () => {
+    const defaultValue = 11;
+    const rows = [0, 1, 1];
+    const cols = [0, 0, 1];
+    const vals = [0, 1, 3];
+    const dims = [2, 2];
+    const matrix = new SparseMatrix(rows, cols, vals, dims);
+
+    expect(matrix.get(0, 0, defaultValue)).toEqual(0);
+    const eliminated = eliminateZeros(matrix);
+
+    expect(eliminated.getValues()).toEqual([1, 3]);
+    expect(eliminated.getRows()).toEqual([1, 1]);
+    expect(eliminated.getCols()).toEqual([0, 1]);
+
+    expect(eliminated.get(0, 0, defaultValue)).toEqual(defaultValue);
   });
 });
 
