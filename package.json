@@ -13,21 +13,34 @@
   "scripts": {
     "test": "jest",
     "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts",
-    "build": "rm -rf dist && tsc && yarn bundle"
+    "build": "rm -rf dist && tsc && yarn bundle",
+    "demo": "webpack-dev-server --config ./webpack/demo.config.ts"
   },
   "devDependencies": {
     "@types/jest": "^24.0.3",
     "@types/node": "^10.12.21",
+    "@types/react": "^16.8.6",
+    "@types/react-dom": "^16.8.2",
+    "@types/three": "^0.93.25",
+    "css-loader": "^2.1.0",
     "dts-bundle-webpack": "^1.0.2",
+    "html-webpack-plugin": "^3.2.0",
     "jest": "23",
     "prando": "^5.1.0",
     "prettier": "^1.16.4",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "style-loader": "^0.23.1",
+    "three": "^0.102.1",
+    "three-orbit-controls": "^82.1.0",
+    "three-orbitcontrols-ts": "^0.1.2",
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.0.2",
     "typescript": "^3.2.4",
     "webpack": "^4.29.5",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.2.1"
   },
   "dependencies": {
     "ml-levenberg-marquardt": "^1.0.3"

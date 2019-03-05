@@ -4,7 +4,7 @@
     "allowJs": false,
     "pretty": true,
     "resolveJsonModule": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "skipLibCheck": true,
     "declaration": true,
     "baseUrl": ".",
@@ -15,7 +15,9 @@
     "removeComments": true,
     "allowUnreachableCode": true,
     "downlevelIteration": true,
-    "lib": ["dom", "es2015", "es2016", "es2017"]
+    "lib": ["dom", "es2015", "es2016", "es2017"],
+    "jsx": "react",
+    "strictPropertyInitialization": false
   },
   "compileOnSave": false,
   "include": ["src"]
