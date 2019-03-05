@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { UMAP, findABParams, euclidean } from '../src/umap';
+import { UMAP, findABParams, euclidean, TargetMetric } from '../src/umap';
 import * as utils from '../src/utils';
 import {
   testData,
@@ -110,6 +110,18 @@ describe('UMAP', () => {
 
     expect(embedding.length).toEqual(testResults2D.length);
     checkClusters(embedding, testLabels, SUPERVISED_CLUSTER_RATIO);
+  });
+
+  test('non-categorical supervised projection is not implemented', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+
+    // Unimplemented target metric.
+    const targetMetric = TargetMetric.l1;
+    umap.setSupervisedProjection(testLabels, { targetMetric });
+    const embedding = umap.fit(testData);
+
+    // Supervision with unimplemented target metric is a noop.
+    expect(embedding).toEqual(testResults2D);
   });
 
   test('finds AB params using levenberg-marquardt', () => {
