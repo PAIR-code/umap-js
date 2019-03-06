@@ -1,11 +1,8 @@
 /* Copyright 2019 Google Inc. All Rights Reserved.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -13,12 +10,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import { UMAP, findABParams } from '../src/umap';
-import { testData, testResults2D, testResults3D } from './test_data';
+import { UMAP, findABParams, euclidean, TargetMetric } from '../src/umap';
+import * as utils from '../src/utils';
+import {
+  testData,
+  testLabels,
+  testResults2D,
+  testResults3D,
+} from './test_data';
 import Prando from 'prando';
 
 describe('UMAP', () => {
   let random: () => number;
+
+  // Expected "clustering" ratios, representing inter-cluster distance vs mean
+  // distance to other points.
+  const UNSUPERVISED_CLUSTER_RATIO = 0.15;
+  const SUPERVISED_CLUSTER_RATIO = 0.04;
+
   beforeEach(() => {
     const prng = new Prando(42);
     random = () => prng.next();
@@ -28,12 +37,14 @@ describe('UMAP', () => {
     const umap = new UMAP({ random, nComponents: 2 });
     const embedding = umap.fit(testData);
     expect(embedding).toEqual(testResults2D);
+    checkClusters(embedding, testLabels, UNSUPERVISED_CLUSTER_RATIO);
   });
 
   test('UMAP fit 3d synchronous method', () => {
     const umap = new UMAP({ random, nComponents: 3 });
     const embedding = umap.fit(testData);
     expect(embedding).toEqual(testResults3D);
+    checkClusters(embedding, testLabels, UNSUPERVISED_CLUSTER_RATIO);
   });
 
   test('UMAP fitAsync method', async () => {
@@ -63,7 +74,7 @@ describe('UMAP', () => {
     const nEpochs = 200;
     const umap = new UMAP({ random, nEpochs });
     let nEpochsComputed = 0;
-    const embedding = await umap.fitAsync(testData, () => {
+    await umap.fitAsync(testData, () => {
       nEpochsComputed += 1;
     });
     expect(nEpochsComputed).toEqual(nEpochs);
@@ -85,11 +96,32 @@ describe('UMAP', () => {
     const { knnIndices, knnDistances } = knnUMAP['nearestNeighbors'](testData);
 
     const umap = new UMAP({ random });
+    umap.setPrecomputedKNN(knnIndices, knnDistances);
     spyOn<any>(umap, 'nearestNeighbors');
-    umap.initializeFit(testData, knnIndices, knnDistances);
     umap.fit(testData);
 
     expect(umap['nearestNeighbors']).toBeCalledTimes(0);
+  });
+
+  test('supervised projection', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+    umap.setSupervisedProjection(testLabels);
+    const embedding = umap.fit(testData);
+
+    expect(embedding.length).toEqual(testResults2D.length);
+    checkClusters(embedding, testLabels, SUPERVISED_CLUSTER_RATIO);
+  });
+
+  test('non-categorical supervised projection is not implemented', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+
+    // Unimplemented target metric.
+    const targetMetric = TargetMetric.l1;
+    umap.setSupervisedProjection(testLabels, { targetMetric });
+    const embedding = umap.fit(testData);
+
+    // Supervision with unimplemented target metric is a noop.
+    expect(embedding).toEqual(testResults2D);
   });
 
   test('finds AB params using levenberg-marquardt', () => {
@@ -108,4 +140,48 @@ describe('UMAP', () => {
     expect(diff(params.a, a)).toBeLessThanOrEqual(epsilon);
     expect(diff(params.b, b)).toBeLessThanOrEqual(epsilon);
   });
+
+  const computeMeanDistances = (vectors: number[][]) => {
+    return vectors.map(vector => {
+      return utils.mean(
+        vectors.map(other => {
+          return euclidean(vector, other);
+        })
+      );
+    });
+  };
+
+  /**
+   * Check the ratio between distances within a cluster and for all points to
+   * indicate "clustering"
+   */
+  const checkClusters = (
+    embeddings: number[][],
+    labels: number[],
+    expectedClusterRatio: number
+  ) => {
+    const distances = computeMeanDistances(embeddings);
+    const overallMeanDistance = utils.mean(distances);
+
+    const embeddingsByLabel = new Map<number, number[][]>();
+    for (let i = 0; i < labels.length; i++) {
+      const label = labels[i];
+      const embedding = embeddings[i];
+      const group = embeddingsByLabel.get(label) || [];
+      group.push(embedding);
+      embeddingsByLabel.set(label, group);
+    }
+
+    let totalIntraclusterDistance = 0;
+    for (let label of embeddingsByLabel.keys()) {
+      const group = embeddingsByLabel.get(label)!;
+      const distances = computeMeanDistances(group);
+      const meanDistance = utils.mean(distances);
+      totalIntraclusterDistance += meanDistance * group.length;
+    }
+    const meanInterclusterDistance =
+      totalIntraclusterDistance / embeddings.length;
+    const clusterRatio = meanInterclusterDistance / overallMeanDistance;
+    expect(clusterRatio).toBeLessThan(expectedClusterRatio);
+  };
 });

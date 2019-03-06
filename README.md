@@ -52,6 +52,16 @@ for (let i = 0; i < nEpochs; i++) {
 const embedding = umap.getEmbedding();
 ```
 
+#### Supervised projection using labels
+
+```typescript
+import { UMAP } from 'umap-js';
+
+const umap = new UMAP();
+umap.setSupervisedProjection(labels);
+const embedding = umap.fit(data);
+```
+
 #### Parameters
 
 The UMAP constructor can accept a number of parameters via a `UMAPParameters` object:
