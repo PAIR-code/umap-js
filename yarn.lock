@@ -5085,9 +5085,9 @@ three-orbitcontrols-ts@^0.1.2:
   dependencies:
     three "^0.83.0"
 
-three@^0.77.0:
-  version "0.77.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.77.0.tgz#8b0b1b00047689ceaa020d480a562ca60d87ff37"
+three@0.81.0:
+  version "0.81.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.81.0.tgz#bf9b8b9757ee584c2b01bd25c9c0a16e6f9b88f6"
 
 three@^0.83.0:
   version "0.83.0"

@@ -31,7 +31,7 @@
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "style-loader": "^0.23.1",
-    "three": "^0.77.0",
+    "three": "0.81.0",
     "three-orbit-controls": "^82.1.0",
     "three-orbitcontrols-ts": "^0.1.2",
     "ts-jest": "^23.10.5",

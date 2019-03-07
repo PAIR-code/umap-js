@@ -171,7 +171,6 @@ export class ProjectorScatterPlotAdapter {
 
   updateScatterPlotPositions() {
     const newPositions = this.generatePointPositionArray(this.projection);
-    console.log(newPositions);
     this.scatterPlot.setPointPositions(newPositions);
   }
 
