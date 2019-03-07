@@ -68,9 +68,15 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
-"@types/three@^0.93.25":
-  version "0.93.25"
-  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.93.25.tgz#5241c77103987976cf58026b2dee9a1e7fc71d36"
+"@types/three@^0.81.0":
+  version "0.81.0"
+  resolved "https://registry.yarnpkg.com/@types/three/-/three-0.81.0.tgz#3c70b485d8f714cbe0c52ea16391b37409d7410b"
+  dependencies:
+    "@types/webvr-api" "*"
+
+"@types/webvr-api@*":
+  version "0.0.35"
+  resolved "https://registry.yarnpkg.com/@types/webvr-api/-/webvr-api-0.0.35.tgz#13b3cf1cd90544524d932ed36e6b109a2ec73d22"
 
 "@webassemblyjs/ast@1.8.3":
   version "1.8.3"
@@ -5079,9 +5085,9 @@ three-orbitcontrols-ts@^0.1.2:
   dependencies:
     three "^0.83.0"
 
-three@^0.102.1:
-  version "0.102.1"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.102.1.tgz#fc08b6b11860cf59e8cd45b7e90e34d1d1a8cbd6"
+three@^0.77.0:
+  version "0.77.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.77.0.tgz#8b0b1b00047689ceaa020d480a562ca60d87ff37"
 
 three@^0.83.0:
   version "0.83.0"

@@ -116,7 +116,7 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     let canvas = document.createElement('canvas');
     canvas.width = MAX_CANVAS_DIMENSION;
     canvas.height = FONT_SIZE;
-    let ctx = canvas.getContext('2d');
+    let ctx = canvas.getContext('2d')!;
     ctx.font = 'bold ' + FONT_SIZE * 0.75 + 'px roboto';
     ctx.textBaseline = 'top';
     ctx.fillStyle = LABEL_BACKGROUND;
@@ -328,15 +328,15 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
       if (this.scene) {
         this.scene.remove(this.labelsMesh);
       }
-      this.labelsMesh = null;
+      (this.labelsMesh as any) = null;
     }
     if (this.geometry) {
       this.geometry.dispose();
-      this.geometry = null;
+      (this.geometry as any) = null;
     }
     if (this.glyphTexture != null && this.glyphTexture.texture != null) {
       this.glyphTexture.texture.dispose();
-      this.glyphTexture.texture = null;
+      (this.glyphTexture as any).texture = null;
     }
   }
 

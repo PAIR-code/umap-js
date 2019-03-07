@@ -1,14 +1,14 @@
 import * as fmnist from '../../data/fmnist.json';
 
-import { DataPoint } from '../projector/data';
+import { DataPoint, Projection, DataSet } from '../projector/data';
 
 class State {
   data: number[][] = [];
   labels: number[] = fmnist.labels;
   labelNames = new Map<number, string>();
 
-  // Projector-compatible data points for visualization
-  dataPoints: DataPoint[] = [];
+  // Projector-compatible data points wrapper for visualization
+  projection: Projection;
 
   constructor() {
     // Populate the label names
@@ -16,6 +16,7 @@ class State {
       this.labelNames.set(i, fmnist.label_names[i]);
     }
 
+    const dataPoints: DataPoint[] = [];
     for (let i = 0; i < fmnist.data.length; i++) {
       // Flatten 2D array of fashion mnist data
       const fmnistItem: number[][] = fmnist.data[i];
@@ -24,15 +25,18 @@ class State {
 
       const label = this.labelNames.get(this.labels[i]) || '';
 
-      this.dataPoints.push({
+      dataPoints.push({
+        originalVector: new Float32Array(vector),
+        vector: new Float32Array(fmnist.projection[i]),
         metadata: {
           label,
         },
-        vector: new Float32Array(vector),
         index: i,
-        projections: {},
       });
     }
+
+    const dataSet = new DataSet(dataPoints);
+    this.projection = new Projection(dataSet, 3);
   }
 }
 

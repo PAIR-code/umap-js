@@ -235,3 +235,37 @@ export function hasWebGLSupport(): boolean {
     return false;
   }
 }
+
+/** Compute the extent [minimum, maximum] of an array of numbers. */
+export function extent(data: number[]) {
+  let minimum = Infinity;
+  let maximum = -Infinity;
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    if (item < minimum) minimum = item;
+    if (item > maximum) maximum = item;
+  }
+  return [minimum, maximum];
+}
+
+/** Scale a value linearly within a domain and range */
+export function scaleLinear(value: number, domain: number[], range: number[]) {
+  const domainDifference = domain[1] - domain[0];
+  const rangeDifference = range[1] - range[0];
+
+  const percentDomain = (value - domain[0]) / domainDifference;
+  return percentDomain * rangeDifference + range[0];
+}
+
+/** Scale a value exponentially within a domain and range */
+export function scaleExponential(
+  value: number,
+  domain: number[],
+  range: number[]
+) {
+  const domainDifference = domain[1] ** Math.E - domain[0] ** Math.E;
+  const rangeDifference = range[1] - range[0];
+
+  const percentDomain = (value ** Math.E - domain[0]) / domainDifference;
+  return percentDomain * rangeDifference + range[0];
+}

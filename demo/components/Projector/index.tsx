@@ -1,20 +1,27 @@
 import * as React from 'react';
 
 import { state } from '../../core';
-import { ScatterPlot } from '../../projector';
+import { ProjectorScatterPlotAdapter } from '../../projector';
 import { dummyProjectorEventContext } from '../../projector/projector-event-context';
 
 const styles = require('./styles.css');
 
 export class Projector extends React.Component {
   containerElement!: HTMLElement;
-  scatterPlot!: ScatterPlot;
+  scatterPlotAdapter!: ProjectorScatterPlotAdapter;
 
   componentDidMount() {
-    this.scatterPlot = new ScatterPlot(
+    this.scatterPlotAdapter = new ProjectorScatterPlotAdapter(
       this.containerElement,
       dummyProjectorEventContext
     );
+
+    const { projection } = state;
+    this.scatterPlotAdapter.updateScatterPlotWithNewProjection(projection);
+
+    // TODO: Add to the update callbacks
+    // this.scatterPlotAdapter.updateScatterPlotPositions();
+    // this.scatterPlotAdapter.updateScatterPlotAttributes();
   }
 
   render() {
