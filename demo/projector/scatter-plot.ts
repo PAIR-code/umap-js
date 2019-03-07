@@ -504,7 +504,7 @@ export class ScatterPlot {
   }
 
   private add3dAxis() {
-    const axes = new THREE.AxisHelper();
+    const axes = new THREE.AxesHelper();
     axes.name = 'axes';
     this.scene.add(axes);
   }
@@ -765,7 +765,8 @@ export class ScatterPlot {
 
     // the picking texture needs to be exactly the same as the render texture.
     {
-      const renderCanvasSize = this.renderer.getSize();
+      const renderCanvasSize = new THREE.Vector2();
+      this.renderer.getSize(renderCanvasSize);
       const pixelRatio = this.renderer.getPixelRatio();
       this.pickingTexture = new THREE.WebGLRenderTarget(
         renderCanvasSize.width * pixelRatio,

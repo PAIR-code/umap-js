@@ -41,6 +41,8 @@ const VERTEX_SHADER = `
     uniform float pointSize;
     uniform float spritesPerRow;
     uniform float spritesPerColumn;
+
+    ${THREE.ShaderChunk['fog_pars_vertex']}
   
     void main() {
       // Pass index and color values to fragment shader.
