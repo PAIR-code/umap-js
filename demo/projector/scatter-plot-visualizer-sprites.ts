@@ -42,7 +42,7 @@ const VERTEX_SHADER = `
     uniform float spritesPerRow;
     uniform float spritesPerColumn;
 
-    ${THREE.ShaderChunk['fog_pars_vertex']}
+    varying float fogDepth;
   
     void main() {
       // Pass index and color values to fragment shader.
@@ -63,6 +63,7 @@ const VERTEX_SHADER = `
       float outputPointSize = pointSize;
       if (sizeAttenuation) {
         outputPointSize = -pointSize / cameraSpacePos.z;
+        fogDepth = pointSize / outputPointSize * 1.2;
       } else {  // Create size attenuation (if we're in 2D mode)
         const float PI = 3.1415926535897932384626433832795;
         const float minScale = 0.1;  // minimum scaling factor
@@ -112,8 +113,11 @@ const FRAGMENT_SHADER = `
     uniform bool isImage;
   
     ${THREE.ShaderChunk['common']}
-    ${THREE.ShaderChunk['fog_pars_fragment']}
     ${FRAGMENT_SHADER_POINT_TEST_CHUNK}
+    uniform vec3 fogColor;
+    varying float fogDepth;
+		uniform float fogNear;
+		uniform float fogFar;
   
     void main() {
       if (isImage) {
@@ -128,7 +132,8 @@ const FRAGMENT_SHADER = `
         }
         gl_FragColor = vec4(vColor, 1);
       }
-      ${THREE.ShaderChunk['fog_fragment']}
+      float fogFactor = smoothstep( fogNear, fogFar, fogDepth );
+      gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );
     }`;
 
 const FRAGMENT_SHADER_PICKING = `
