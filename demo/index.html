@@ -4,9 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="scatter.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <title>UMAP-JS demo</title>
   </head>
-  <body>
-    <div id="root"></div>
-  </body>
+  <body class="mdl-demo mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header mdl-layout__header--scroll mdl-color--primary">
+        <div class="mdl-layout--large-screen-only mdl-layout__header-row">
+          <h3>UMAP-JS demo</h3>
+        </div>
+      </header>
+      <main class="mdl-layout__content">
+        <div id="scatter"></div>
+      </main>
+    </div>
 </html>

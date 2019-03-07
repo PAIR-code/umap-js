@@ -7,37 +7,25 @@ export default {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         exclude: /node_modules/,
         use: 'ts-loader',
-      },
-      {
-        test: /\.css$/,
-        use: 'style-loader',
-      },
-      {
-        test: /\.css$/,
-        loader: 'css-loader',
-        query: {
-          modules: true,
-          localIdentName: '[name]__[local]___[hash:base64:5]',
-        },
       },
     ],
   },
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.ts', '.tsx', '.js'],
+    extensions: ['.ts', '.js'],
   },
   entry: {
-    demo: './demo/index.tsx',
+    demo: './demo/index.ts',
   },
   output: {
-    path: path.join(__dirname, '../dist'),
+    path: path.join(__dirname, '../dist/demo'),
     filename: 'bundle.min.js',
   },
   devServer: {
-    contentBase: path.join(__dirname, '../dist'),
+    contentBase: path.join(__dirname, '../demo'),
     port: 8080,
   },
   plugins: [
