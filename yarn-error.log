@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn add -D @rtypes/three-orbitcontrols
+  /usr/local/bin/node /usr/local/bin/yarn add -D import CONTRIBUTING.md LICENSE README.md data demo dist jest.config.js lib node_modules package.json src test tsconfig.json webpack yarn-error.log yarn.lock as tf_tsne from @tensorflow/tfjs-tsne
 
 PATH: 
   /Users/andycoenen/google-cloud-sdk/bin:/anaconda2/bin:/Users/andycoenen/bin:/Users/andycoenen/bin:/Users/andycoenen/homebrew/bin:/Users/andycoenen/.local/bin:/Users/andycoenen/bin:/usr/local/git/current/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/Users/andycoenen/.yarn/bin
@@ -33,11 +33,15 @@ npm manifest:
       "demo": "webpack-dev-server --config ./webpack/demo.config.ts"
     },
     "devDependencies": {
+      "@types/d3": "3",
       "@types/jest": "^24.0.3",
       "@types/node": "^10.12.21",
       "@types/react": "^16.8.6",
       "@types/react-dom": "^16.8.2",
-      "@types/three": "^0.93.25",
+      "@types/three": "^0.93.26",
+      "css-loader": "^2.1.0",
+      "d3": "3",
+      "d3-tip": "^0.9.1",
       "dts-bundle-webpack": "^1.0.2",
       "html-webpack-plugin": "^3.2.0",
       "jest": "23",
@@ -45,8 +49,10 @@ npm manifest:
       "prettier": "^1.16.4",
       "react": "^16.8.3",
       "react-dom": "^16.8.3",
-      "three": "^0.102.1",
+      "style-loader": "^0.23.1",
+      "three": "0.102.0",
       "three-orbit-controls": "^82.1.0",
+      "three-orbitcontrols-ts": "^0.1.2",
       "ts-jest": "^23.10.5",
       "ts-loader": "^5.3.3",
       "ts-node": "^8.0.2",
@@ -84,6 +90,10 @@ Lockfile:
       chalk "^2.0.0"
       esutils "^2.0.2"
       js-tokens "^4.0.0"
+  
+  "@types/d3@3":
+    version "3.5.41"
+    resolved "https://registry.yarnpkg.com/@types/d3/-/d3-3.5.41.tgz#57f08fc79b75f0fecb0b3547abc22e46e9d660e4"
   
   "@types/detect-indent@0.1.30":
     version "0.1.30"
@@ -137,9 +147,9 @@ Lockfile:
       "@types/prop-types" "*"
       csstype "^2.2.0"
   
-  "@types/three@^0.93.25":
-    version "0.93.25"
-    resolved "https://registry.yarnpkg.com/@types/three/-/three-0.93.25.tgz#5241c77103987976cf58026b2dee9a1e7fc71d36"
+  "@types/three@^0.93.26":
+    version "0.93.26"
+    resolved "https://registry.yarnpkg.com/@types/three/-/three-0.93.26.tgz#59abbb2b7d8e05108418907f3123ba1e578c65ab"
   
   "@webassemblyjs/ast@1.8.3":
     version "1.8.3"
@@ -948,7 +958,7 @@ Lockfile:
       strip-ansi "^3.0.0"
       supports-color "^2.0.0"
   
-  chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.0, chalk@^2.4.1:
+  chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4.2:
     version "2.4.2"
     resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
     dependencies:
@@ -1221,6 +1231,21 @@ Lockfile:
       randombytes "^2.0.0"
       randomfill "^1.0.3"
   
+  css-loader@^2.1.0:
+    version "2.1.0"
+    resolved "https://registry.yarnpkg.com/css-loader/-/css-loader-2.1.0.tgz#42952ac22bca5d076978638e9813abce49b8f0cc"
+    dependencies:
+      icss-utils "^4.0.0"
+      loader-utils "^1.2.1"
+      lodash "^4.17.11"
+      postcss "^7.0.6"
+      postcss-modules-extract-imports "^2.0.0"
+      postcss-modules-local-by-default "^2.0.3"
+      postcss-modules-scope "^2.0.0"
+      postcss-modules-values "^2.0.0"
+      postcss-value-parser "^3.3.0"
+      schema-utils "^1.0.0"
+  
   css-select@^1.1.0:
     version "1.2.0"
     resolved "https://registry.yarnpkg.com/css-select/-/css-select-1.2.0.tgz#2b3a110539c5355f1cd8d314623e870b121ec858"
@@ -1233,6 +1258,10 @@ Lockfile:
   css-what@2.1:
     version "2.1.3"
     resolved "https://registry.yarnpkg.com/css-what/-/css-what-2.1.3.tgz#a6d7604573365fe74686c3f311c56513d88285f2"
+  
+  cssesc@^3.0.0:
+    version "3.0.0"
+    resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   
   cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
     version "0.3.6"
@@ -1251,6 +1280,25 @@ Lockfile:
   cyclist@~0.2.2:
     version "0.2.2"
     resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-0.2.2.tgz#1b33792e11e914a2fd6d6ed6447464444e5fa640"
+  
+  d3-collection@^1.0.4:
+    version "1.0.7"
+    resolved "https://registry.yarnpkg.com/d3-collection/-/d3-collection-1.0.7.tgz#349bd2aa9977db071091c13144d5e4f16b5b310e"
+  
+  d3-selection@^1.3.0:
+    version "1.4.0"
+    resolved "https://registry.yarnpkg.com/d3-selection/-/d3-selection-1.4.0.tgz#ab9ac1e664cf967ebf1b479cc07e28ce9908c474"
+  
+  d3-tip@^0.9.1:
+    version "0.9.1"
+    resolved "https://registry.yarnpkg.com/d3-tip/-/d3-tip-0.9.1.tgz#84e6d331c4e6650d80c5228a07e41820609ab64b"
+    dependencies:
+      d3-collection "^1.0.4"
+      d3-selection "^1.3.0"
+  
+  d3@3:
+    version "3.5.17"
+    resolved "https://registry.yarnpkg.com/d3/-/d3-3.5.17.tgz#bc46748004378b21a360c9fc7cf5231790762fb8"
   
   dashdash@^1.12.0:
     version "1.14.1"
@@ -2381,6 +2429,16 @@ Lockfile:
     dependencies:
       safer-buffer ">= 2.1.2 < 3"
   
+  icss-replace-symbols@^1.1.0:
+    version "1.1.0"
+    resolved "https://registry.yarnpkg.com/icss-replace-symbols/-/icss-replace-symbols-1.1.0.tgz#06ea6f83679a7749e386cfe1fe812ae5db223ded"
+  
+  icss-utils@^4.0.0:
+    version "4.1.0"
+    resolved "https://registry.yarnpkg.com/icss-utils/-/icss-utils-4.1.0.tgz#339dbbffb9f8729a243b701e1c29d4cc58c52f0e"
+    dependencies:
+      postcss "^7.0.14"
+  
   ieee754@^1.1.4:
     version "1.1.12"
     resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.12.tgz#50bf24e5b9c8bb98af4964c941cdb0918da7b60b"
@@ -2412,6 +2470,10 @@ Lockfile:
   imurmurhash@^0.1.4:
     version "0.1.4"
     resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
+  
+  indexes-of@^1.0.1:
+    version "1.0.1"
+    resolved "https://registry.yarnpkg.com/indexes-of/-/indexes-of-1.0.1.tgz#f30f716c8e2bd346c7b67d3df3915566a7c05607"
   
   indexof@0.0.1:
     version "0.0.1"
@@ -3245,7 +3307,7 @@ Lockfile:
       json5 "^0.5.0"
       object-assign "^4.0.1"
   
-  loader-utils@^1.0.2, loader-utils@^1.1.0:
+  loader-utils@^1.0.2, loader-utils@^1.1.0, loader-utils@^1.2.1:
     version "1.2.3"
     resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-1.2.3.tgz#1ff5dc6911c9f0a062531a4c04b609406108c2c7"
     dependencies:
@@ -4124,6 +4186,54 @@ Lockfile:
     version "0.1.1"
     resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   
+  postcss-modules-extract-imports@^2.0.0:
+    version "2.0.0"
+    resolved "https://registry.yarnpkg.com/postcss-modules-extract-imports/-/postcss-modules-extract-imports-2.0.0.tgz#818719a1ae1da325f9832446b01136eeb493cd7e"
+    dependencies:
+      postcss "^7.0.5"
+  
+  postcss-modules-local-by-default@^2.0.3:
+    version "2.0.6"
+    resolved "https://registry.yarnpkg.com/postcss-modules-local-by-default/-/postcss-modules-local-by-default-2.0.6.tgz#dd9953f6dd476b5fd1ef2d8830c8929760b56e63"
+    dependencies:
+      postcss "^7.0.6"
+      postcss-selector-parser "^6.0.0"
+      postcss-value-parser "^3.3.1"
+  
+  postcss-modules-scope@^2.0.0:
+    version "2.1.0"
+    resolved "https://registry.yarnpkg.com/postcss-modules-scope/-/postcss-modules-scope-2.1.0.tgz#ad3f5bf7856114f6fcab901b0502e2a2bc39d4eb"
+    dependencies:
+      postcss "^7.0.6"
+      postcss-selector-parser "^6.0.0"
+  
+  postcss-modules-values@^2.0.0:
+    version "2.0.0"
+    resolved "https://registry.yarnpkg.com/postcss-modules-values/-/postcss-modules-values-2.0.0.tgz#479b46dc0c5ca3dc7fa5270851836b9ec7152f64"
+    dependencies:
+      icss-replace-symbols "^1.1.0"
+      postcss "^7.0.6"
+  
+  postcss-selector-parser@^6.0.0:
+    version "6.0.1"
+    resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-6.0.1.tgz#7ee5476d0fc52f27b25122a361f160b9cf39b0ff"
+    dependencies:
+      cssesc "^3.0.0"
+      indexes-of "^1.0.1"
+      uniq "^1.0.1"
+  
+  postcss-value-parser@^3.3.0, postcss-value-parser@^3.3.1:
+    version "3.3.1"
+    resolved "https://registry.yarnpkg.com/postcss-value-parser/-/postcss-value-parser-3.3.1.tgz#9ff822547e2893213cf1c30efa51ac5fd1ba8281"
+  
+  postcss@^7.0.14, postcss@^7.0.5, postcss@^7.0.6:
+    version "7.0.14"
+    resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.14.tgz#4527ed6b1ca0d82c53ce5ec1a2041c2346bbd6e5"
+    dependencies:
+      chalk "^2.4.2"
+      source-map "^0.6.1"
+      supports-color "^6.1.0"
+  
   prando@^5.1.0:
     version "5.1.0"
     resolved "https://registry.yarnpkg.com/prando/-/prando-5.1.0.tgz#f0aab737ba0c356e2f2f9e3088b9118e42b05f51"
@@ -4977,6 +5087,13 @@ Lockfile:
     version "2.0.1"
     resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   
+  style-loader@^0.23.1:
+    version "0.23.1"
+    resolved "https://registry.yarnpkg.com/style-loader/-/style-loader-0.23.1.tgz#cb9154606f3e771ab6c4ab637026a1049174d925"
+    dependencies:
+      loader-utils "^1.1.0"
+      schema-utils "^1.0.0"
+  
   supports-color@^2.0.0:
     version "2.0.0"
     resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-2.0.0.tgz#535d045ce6b6363fa40117084629995e9df324c7"
@@ -5054,9 +5171,19 @@ Lockfile:
     version "82.1.0"
     resolved "https://registry.yarnpkg.com/three-orbit-controls/-/three-orbit-controls-82.1.0.tgz#11a7f33d0a20ecec98f098b37780f6537374fab4"
   
-  three@^0.102.1:
-    version "0.102.1"
-    resolved "https://registry.yarnpkg.com/three/-/three-0.102.1.tgz#fc08b6b11860cf59e8cd45b7e90e34d1d1a8cbd6"
+  three-orbitcontrols-ts@^0.1.2:
+    version "0.1.2"
+    resolved "https://registry.yarnpkg.com/three-orbitcontrols-ts/-/three-orbitcontrols-ts-0.1.2.tgz#2040955904022ae19c2e9c52ffdff43168658abd"
+    dependencies:
+      three "^0.83.0"
+  
+  three@0.102.0:
+    version "0.102.0"
+    resolved "https://registry.yarnpkg.com/three/-/three-0.102.0.tgz#b26a7212d95f1ea043ab94598d55973ebe110cbb"
+  
+  three@^0.83.0:
+    version "0.83.0"
+    resolved "https://registry.yarnpkg.com/three/-/three-0.83.0.tgz#3b7f94790af3e021dac1f44a2617569ca2032b0b"
   
   throat@^4.0.0:
     version "4.1.0"
@@ -5237,6 +5364,10 @@ Lockfile:
       get-value "^2.0.6"
       is-extendable "^0.1.1"
       set-value "^0.4.3"
+  
+  uniq@^1.0.1:
+    version "1.0.1"
+    resolved "https://registry.yarnpkg.com/uniq/-/uniq-1.0.1.tgz#b31c5ae8254844a3a8281541ce2b04b865a734ff"
   
   unique-filename@^1.1.1:
     version "1.1.1"
@@ -5696,7 +5827,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/yn/-/yn-3.0.0.tgz#0073c6b56e92aed652fbdfd62431f2d6b9a7a091"
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@rtypes%2fthree-orbitcontrols: Not found
+  Error: https://registry.yarnpkg.com/CONTRIBUTING.md: Not found
       at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:62098:18)
       at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:123085:22)
       at Request.emit (events.js:189:13)

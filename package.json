@@ -17,6 +17,7 @@
     "demo": "webpack-dev-server --config ./webpack/demo.config.ts"
   },
   "devDependencies": {
+    "@tensorflow/tfjs-core": "^1.0.0",
     "@types/d3": "3",
     "@types/jest": "^24.0.3",
     "@types/node": "^10.12.21",

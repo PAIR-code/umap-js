@@ -4,22 +4,100 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="scatter.css">
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link
+      rel="stylesheet"
+      href="https://code.getmdl.io/1.3.0/material.blue-teal.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="scatter.css" />
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-    <title>UMAP-JS demo</title>
+    <title>umap-js</title>
   </head>
   <body class="mdl-demo mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-      <header class="mdl-layout__header mdl-layout__header--scroll mdl-color--primary">
-        <div class="mdl-layout--large-screen-only mdl-layout__header-row">
-          <h3>UMAP-JS demo</h3>
+    <div
+      class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
+      mdl-layout--fixed-header"
+    >
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title">umap-js</span>
         </div>
       </header>
+      <div class="mdl-layout__drawer">
+        <div class="controls-row">
+          <div
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+          >
+            <input
+              class="mdl-textfield__input"
+              type="text"
+              id="neighbors-input"
+              value="15"
+            />
+            <label class="mdl-textfield__label" for="sample4"
+              >n neighbors</label
+            >
+          </div>
+        </div>
+        <div class="controls-row">
+          <div
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+          >
+            <input
+              class="mdl-textfield__input"
+              type="text"
+              id="min-dist-input"
+              value="0.1"
+            />
+            <label class="mdl-textfield__label" for="sample4"
+              >minimum distance</label
+            >
+          </div>
+        </div>
+        <div class="controls-row">
+          <div
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+          >
+            <input
+              class="mdl-textfield__input"
+              type="text"
+              id="spread-input"
+              value="1.0"
+            />
+            <label class="mdl-textfield__label" for="sample4">spread</label>
+          </div>
+        </div>
+        <div class="controls-row">
+          <label
+            class="mdl-switch mdl-js-switch mdl-js-ripple-effect"
+            for="switch-supervised"
+          >
+            <input
+              type="checkbox"
+              id="switch-supervised"
+              class="mdl-switch__input"
+            />
+            <span class="mdl-switch__label">Supervised</span>
+          </label>
+        </div>
+        <div class="controls-row">
+          <button
+            class="mdl-button mdl-js-button mdl-button--raised mdl-button--color"
+          >
+            Project
+          </button>
+        </div>
+      </div>
       <main class="mdl-layout__content">
-        <div id="scatter"></div>
+        <div class="page-content"><div id="scatter"></div></div>
+        <div class="loading-overlay">
+          <div class="mdl-spinner mdl-js-spinner is-active"></div>
+        </div>
       </main>
     </div>
+  </body>
 </html>
