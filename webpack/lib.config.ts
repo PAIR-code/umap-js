@@ -5,17 +5,17 @@ export default {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /(\.ts$|\.js$)/,
         exclude: /node_modules/,
-        use: 'ts-loader',
+        loader: 'ts-loader',
       },
     ],
   },
   resolve: {
-    extensions: ['.ts'],
+    extensions: ['.ts', '.js'],
   },
   entry: {
-    lib: './src/lib.ts',
+    lib: path.resolve(__dirname, '../src/lib.ts'),
   },
   output: {
     filename: 'umap-js.js',
