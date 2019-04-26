@@ -58,7 +58,7 @@
  */
 
 import * as utils from './utils';
-import { Vectors } from './umap';
+import { Vector, Vectors } from './umap';
 
 /**
  * Tree functionality for approximating nearest neighbors
@@ -338,4 +338,43 @@ export function makeLeafArray(rpForest: FlatTree[]): number[][] {
   } else {
     return [[-1]];
   }
+}
+
+/**
+ * Selects the side of the tree to search during flat tree search.
+ */
+function selectSide(hyperplane: number[], offset: number, point: Vector) {
+  let margin = offset;
+  for (let d = 0; d < point.length; d++) {
+    margin += hyperplane[d] * point[d];
+  }
+
+  if (margin === 0) {
+    const side = utils.tauRandInt(2);
+    return side;
+  } else if (margin > 0) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+/**
+ * Searches a flattened rp-tree for a point.
+ */
+export function searchFlatTree(point: Vector, tree: FlatTree) {
+  let node = 0;
+  while (tree.children[node][0] > 0) {
+    const side = selectSide(tree.hyperplanes[node], tree.offsets[node], point);
+    if (side === 0) {
+      node = tree.children[node][0];
+    } else {
+      node = tree.children[node][1];
+    }
+  }
+
+  // python -> indices[-children[node, 0]]
+  const index = -1 * tree.children[node][0];
+
+  return tree.indices[index];
 }

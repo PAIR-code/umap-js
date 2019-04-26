@@ -148,6 +148,12 @@ describe('UMAP', () => {
     expect(diff(params.b, b)).toBeLessThanOrEqual(epsilon);
   });
 
+  test.only('transforms an additional point after fitting', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+    const embedding = umap.fit(testData);
+    expect(embedding).toEqual(testResults2D);
+  });
+
   const computeMeanDistances = (vectors: number[][]) => {
     return vectors.map(vector => {
       return utils.mean(

@@ -44,20 +44,24 @@ export function randomNormal2d(
     });
 }
 
+import { r } from './mersenne';
+
 /**
  * Simple random integer function
  */
 export function tauRandInt(n: number, random = Math.random) {
-  return Math.floor(random() * n);
+  // return Math.floor(r.genrand_real2() * n);
+  return r.genrand_int32() % n;
 }
 
 /**
  * Simple random float function
  */
 export function tauRand(random = Math.random) {
-  return random();
+  // return r.genrand_real2();
+  const integer = tauRandInt(0x7fffffff * 2);
+  return integer / (0x7fffffff * 2);
 }
-
 /**
  * Compute the (standard l2) norm of a vector.
  */
@@ -153,4 +157,50 @@ export function max2d(input: number[][]): number {
     }
   }
   return max;
+}
+
+/**
+ * Generate nSamples many integers from 0 to pool_size such that no
+ * integer is selected twice. The duplication constraint is achieved via
+ * rejection sampling.
+ */
+export function rejectionSample(nSamples: number, poolSize: number): number[] {
+  const result = zeros(nSamples);
+  for (let i = 0; i < nSamples; i++) {
+    let rejectSample = true;
+    while (rejectSample) {
+      const j = tauRandInt(poolSize);
+      let broken = false;
+      for (let k = 0; k < i; k++) {
+        if (j === result[k]) {
+          broken = true;
+          break;
+        }
+      }
+      if (!broken) {
+        rejectSample = false;
+      }
+      result[i] = j;
+    }
+  }
+  return result;
+}
+
+/**
+ * Reshapes a 1d array into a 2D of given dimensions.
+ */
+export function reshape2d<T>(x: T[], a: number, b: number): T[][] {
+  const rows: T[][] = [];
+  let count = 0;
+  let index = 0;
+  for (let i = 0; i < a; i++) {
+    const col: T[] = [];
+    for (let j = 0; j < b; j++) {
+      col.push(x[index]);
+      index += 1;
+    }
+    rows.push(col);
+    count += 1;
+  }
+  return rows;
 }

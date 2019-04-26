@@ -57,11 +57,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as heap from './heap';
 import * as matrix from './matrix';
 import * as nnDescent from './nn_descent';
 import * as tree from './tree';
 import * as utils from './utils';
 import * as LM from 'ml-levenberg-marquardt';
+import { NPN_ENABLED } from 'constants';
 
 export type DistanceFn = (x: Vector, y: Vector) => number;
 export type EpochCallback = (epoch: number) => boolean | void;
@@ -77,6 +79,14 @@ const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
 
 export interface UMAPParameters {
+  /**
+   * The local connectivity required -- i.e. the number of nearest
+   * neighbors that should be assumed to be connected at a local level.
+   * The higher this value the more connected the manifold becomes
+   * locally. In practice this should be not more than the local intrinsic
+   * dimension of the manifold.
+   */
+  localConnectivity?: number;
   /**
    * The effective minimum distance between embedded points. Smaller values
    * will result in a more clustered/clumped embedding where nearby points
@@ -120,6 +130,14 @@ export interface UMAPParameters {
    * this determines how clustered/clumped the embedded points are.
    */
   spread?: number;
+
+  /**
+   * For transform operations (embedding new points using a trained model)
+   * this will control how aggressively to search for nearest neighbors.
+   * Larger values will result in slower performance but more accurate
+   * nearest neighbor evaluation.
+   */
+  transformQueueSize?: number;
 }
 
 export interface UMAPSupervisedParams {
@@ -169,12 +187,14 @@ export interface UMAPSupervisedParams {
  *      step through each epoch of the SGD optimization
  */
 export class UMAP {
+  private localConnectivity = 1.0;
   private minDist = 0.1;
   private nComponents = 2;
   private nEpochs = 0;
   private nNeighbors = 15;
   private random = Math.random;
   private spread = 1.0;
+  private transformQueueSize = 4.0;
 
   // Supervised projection params
   private targetMetric = TargetMetric.categorical;
@@ -191,6 +211,11 @@ export class UMAP {
   private graph!: matrix.SparseMatrix;
   private X!: Vectors;
   private isInitialized = false;
+  private rpForest: tree.FlatTree[] = [];
+  private initFromRandom!: nnDescent.InitFromRandomFn;
+  private initFromTree!: nnDescent.InitFromTreeFn;
+  private search!: nnDescent.SearchFn;
+  private searchGraph!: matrix.SparseMatrix;
 
   // Supervised projection labels / targets
   private Y?: number[];
@@ -200,12 +225,15 @@ export class UMAP {
   private optimizationState = new OptimizationState();
 
   constructor(params: UMAPParameters = {}) {
+    this.localConnectivity = params.localConnectivity || this.localConnectivity;
     this.minDist = params.minDist || this.minDist;
     this.nComponents = params.nComponents || this.nComponents;
     this.nEpochs = params.nEpochs || this.nEpochs;
     this.nNeighbors = params.nNeighbors || this.nNeighbors;
     this.random = params.random || this.random;
     this.spread = params.spread || this.spread;
+    this.transformQueueSize =
+      params.transformQueueSize || this.transformQueueSize;
   }
 
   /**
@@ -228,7 +256,7 @@ export class UMAP {
   ) {
     this.initializeFit(X);
 
-    await this.optimizeLayout(callback);
+    await this.optimizeLayoutAsync(callback);
     return this.embedding;
   }
 
@@ -272,6 +300,10 @@ export class UMAP {
 
     this.graph = this.fuzzySimplicialSet(X, this.nNeighbors);
 
+    // Set up the search graph for subsequent transformation.
+    this.makeSearchFns();
+    this.searchGraph = this.makeSearchGraph(X);
+
     // Check if supervised projection, then adjust the graph.
     this.processGraphForSupervisedProjection();
 
@@ -286,8 +318,143 @@ export class UMAP {
     this.optimizationState.tail = tail;
     this.optimizationState.epochsPerSample = epochsPerSample;
 
+    // Now, initialize the optimization steps
+    this.initializeOptimization();
     this.isInitialized = true;
+
     return this.getNEpochs();
+  }
+
+  private makeSearchFns() {
+    const { initFromTree, initFromRandom } = nnDescent.makeInitializations(
+      this.distanceFn
+    );
+    this.initFromTree = initFromTree;
+    this.initFromRandom = initFromRandom;
+    this.search = nnDescent.makeInitializedNNSearch(this.distanceFn);
+  }
+
+  private makeSearchGraph(X: Vectors) {
+    const knnIndices = this.knnIndices!;
+    const knnDistances = this.knnDistances!;
+    const dims = [X.length, X.length];
+    const searchGraph = new matrix.SparseMatrix([], [], [], dims);
+    for (let i = 0; i < knnIndices.length; i++) {
+      const knn = knnIndices[i];
+      const distances = knnDistances[i];
+      for (let j = 0; j < knn.length; j++) {
+        const neighbor = knn[j];
+        const distance = distances[j];
+        if (distance > 0) {
+          searchGraph.set(i, neighbor, distance);
+        }
+      }
+    }
+
+    const transpose = matrix.transpose(searchGraph);
+    return matrix.maximum(searchGraph, transpose);
+  }
+
+  /**
+   * Transforms data to the existing embedding space.
+   */
+  transform(toTransform: Vectors) {
+    // Use the previous rawData
+    const rawData = this.X;
+    if (rawData === undefined || rawData.length === 0) {
+      throw new Error('No data has been fit.');
+    }
+
+    const nNeighbors = Math.floor(this.nNeighbors * this.transformQueueSize);
+    const init = nnDescent.initializeSearch(
+      this.rpForest,
+      rawData,
+      toTransform,
+      nNeighbors,
+      this.initFromRandom,
+      this.initFromTree
+    );
+
+    const result = this.search(rawData, this.searchGraph, init, toTransform);
+
+    let { indices, weights: distances } = heap.deheapSort(result);
+
+    indices = indices.map(x => x.slice(0, this.nNeighbors));
+    distances = distances.map(x => x.slice(0, this.nNeighbors));
+
+    const adjustedLocalConnectivity = Math.max(0, this.localConnectivity - 1);
+    const { sigmas, rhos } = this.smoothKNNDistance(
+      distances,
+      this.nNeighbors,
+      adjustedLocalConnectivity
+    );
+
+    const { rows, cols, vals } = this.computeMembershipStrengths(
+      indices,
+      distances,
+      sigmas,
+      rhos
+    );
+
+    const size = [toTransform.length, rawData.length];
+    let graph = new matrix.SparseMatrix(rows, cols, vals, size);
+
+    // This was a very specially constructed graph with constant degree.
+    // That lets us do fancy unpacking by reshaping the csr matrix indices
+    // and data. Doing so relies on the constant degree assumption!
+
+    const normed = matrix.normalize(graph, matrix.NormType.l1);
+
+    const csrMatrix = matrix.getCSR(normed);
+    const nPoints = toTransform.length;
+
+    const eIndices = utils.reshape2d(
+      csrMatrix.indices,
+      nPoints,
+      this.nNeighbors
+    );
+
+    const eWeights = utils.reshape2d(
+      csrMatrix.values,
+      nPoints,
+      this.nNeighbors
+    );
+
+    const embedding = initTransform(eIndices, eWeights, this.embedding);
+
+    const nEpochs = this.nEpochs
+      ? this.nEpochs / 3
+      : graph.nRows <= 10000
+      ? 100
+      : 30;
+
+    const graphMax = graph
+      .getValues()
+      .reduce((max, val) => (val > max ? val : max), 0);
+    graph = graph.map(value => (value < graphMax / nEpochs ? 0 : value));
+    graph = matrix.eliminateZeros(graph);
+
+    const epochsPerSample = this.makeEpochsPerSample(
+      graph.getValues(),
+      nEpochs
+    );
+    const head = graph.getRows();
+    const tail = graph.getCols();
+
+    console.log({ headEmbedding: embedding, tailEmbedding: this.embedding });
+
+    this.assignOptimizationStateParameters({
+      headEmbedding: embedding,
+      tailEmbedding: this.embedding,
+      head,
+      tail,
+      currentEpoch: 0,
+      nEpochs,
+      nVertices: graph.getDims()[1],
+      epochsPerSample,
+    });
+
+    return this.optimizeLayout();
   }
 
   /**
@@ -318,10 +485,7 @@ export class UMAP {
    * Manually step through the optimization process one epoch at a time.
    */
   step() {
-    const { currentEpoch, isInitialized } = this.optimizationState;
-    if (!isInitialized) {
-      this.initializeOptimization();
-    }
+    const { currentEpoch } = this.optimizationState;
 
     if (currentEpoch < this.getNEpochs()) {
       this.optimizeLayoutStep(currentEpoch);
@@ -354,9 +518,9 @@ export class UMAP {
     const nTrees = 5 + Math.floor(round(X.length ** 0.5 / 20.0));
     const nIters = Math.max(5, Math.floor(Math.round(log2(X.length))));
 
-    const rpForest = tree.makeForest(X, nNeighbors, nTrees, this.random);
+    this.rpForest = tree.makeForest(X, nNeighbors, nTrees, this.random);
 
-    const leafArray = tree.makeLeafArray(rpForest);
+    const leafArray = tree.makeLeafArray(this.rpForest);
     const { indices, weights } = metricNNDescent(
       X,
       leafArray,
@@ -377,10 +541,9 @@ export class UMAP {
   private fuzzySimplicialSet(
     X: Vectors,
     nNeighbors: number,
-    localConnectivity = 1.0,
     setOpMixRatio = 1.0
   ) {
-    const { knnIndices = [], knnDistances = [] } = this;
+    const { knnIndices = [], knnDistances = [], localConnectivity } = this;
 
     const { sigmas, rhos } = this.smoothKNNDistance(
       knnDistances,
@@ -633,25 +796,27 @@ export class UMAP {
   }
 
   /**
-   * Initializes optimization state for stepwise optimization
+   * Assigns optimization state parameters from a partial optimization state.
    */
-  private initializeOptimization() {
-    // Algorithm state
-    const headEmbedding = this.embedding;
-    const tailEmbedding = this.embedding;
+  private assignOptimizationStateParameters(state: Partial<OptimizationState>) {
+    Object.assign(this.optimizationState, state);
+  }
 
-    // Initialized in initializeSimplicialSetEmbedding()
-    const { head, tail, epochsPerSample } = this.optimizationState;
-
+  /**
+   * Sets a few optimization state parameters that are necessary before entering
+   * the optimization step loop.
+   */
+  private prepareForOptimizationLoop() {
     // Hyperparameters
     const gamma = 1.0;
     const initialAlpha = 1.0;
     const negativeSampleRate = 5;
 
-    const nEpochs = this.getNEpochs();
-    const nVertices = this.graph.nCols;
-
-    const { a, b } = findABParams(this.spread, this.minDist);
+    const {
+      epochsPerSample,
+      headEmbedding,
+      tailEmbedding,
+    } = this.optimizationState;
 
     const dim = headEmbedding[0].length;
     const moveOther = headEmbedding.length === tailEmbedding.length;
@@ -663,13 +828,7 @@ export class UMAP {
     const epochOfNextNegativeSample = [...epochsPerNegativeSample];
     const epochOfNextSample = [...epochsPerSample];
 
-    Object.assign(this.optimizationState, {
-      isInitialized: true,
-      headEmbedding,
-      tailEmbedding,
-      head,
-      tail,
-      epochsPerSample,
+    this.assignOptimizationStateParameters({
       epochOfNextSample,
       epochOfNextNegativeSample,
       epochsPerNegativeSample,
@@ -677,9 +836,34 @@ export class UMAP {
       initialAlpha,
       alpha,
       gamma,
+      dim,
+    });
+  }
+
+  /**
+   * Initializes optimization state for stepwise optimization.
+   */
+  private initializeOptimization() {
+    // Algorithm state
+    const headEmbedding = this.embedding;
+    const tailEmbedding = this.embedding;
+
+    // Initialized in initializeSimplicialSetEmbedding()
+    const { head, tail, epochsPerSample } = this.optimizationState;
+
+    const nEpochs = this.getNEpochs();
+    const nVertices = this.graph.nCols;
+
+    const { a, b } = findABParams(this.spread, this.minDist);
+
+    this.assignOptimizationStateParameters({
+      headEmbedding,
+      tailEmbedding,
+      head,
+      tail,
+      epochsPerSample,
       a,
       b,
-      dim,
       nEpochs,
       nVertices,
     });
@@ -777,8 +961,7 @@ export class UMAP {
     optimizationState.alpha = initialAlpha * (1.0 - n / nEpochs);
 
     optimizationState.currentEpoch += 1;
-    this.embedding = headEmbedding;
-    return optimizationState.currentEpoch;
+    return headEmbedding;
   }
 
   /**
@@ -788,18 +971,17 @@ export class UMAP {
    * sampling edges based on their membership strength (with the (1-p) terms
    * coming from negative sampling similar to word2vec).
    */
-  private optimizeLayout(
+  private optimizeLayoutAsync(
     epochCallback: (epochNumber: number) => void | boolean = () => true
   ): Promise<boolean> {
-    if (!this.optimizationState.isInitialized) {
-      this.initializeOptimization();
-    }
+    this.prepareForOptimizationLoop();
 
     return new Promise((resolve, reject) => {
       const step = async () => {
         try {
           const { nEpochs, currentEpoch } = this.optimizationState;
-          const epochCompleted = this.optimizeLayoutStep(currentEpoch);
+          this.embedding = this.optimizeLayoutStep(currentEpoch);
+          const epochCompleted = this.optimizationState.currentEpoch;
           const shouldStop = epochCallback(epochCompleted) === false;
           const isFinished = epochCompleted === nEpochs;
           if (!shouldStop && !isFinished) {
@@ -813,6 +995,30 @@ export class UMAP {
       };
       step();
     });
+  }
+
+  /**
+   * Improve an embedding using stochastic gradient descent to minimize the
+   * fuzzy set cross entropy between the 1-skeletons of the high dimensional
+   * and low dimensional fuzzy simplicial sets. In practice this is done by
+   * sampling edges based on their membership strength (with the (1-p) terms
+   * coming from negative sampling similar to word2vec).
+   */
+  private optimizeLayout(
+    epochCallback: (epochNumber: number) => void | boolean = () => true
+  ): Vectors {
+    this.prepareForOptimizationLoop();
+
+    let isFinished = false;
+    let embedding: Vectors = [];
+    while (!isFinished) {
+      const { nEpochs, currentEpoch } = this.optimizationState;
+      embedding = this.optimizeLayoutStep(currentEpoch);
+      const epochCompleted = this.optimizationState.currentEpoch;
+      const shouldStop = epochCallback(epochCompleted) === false;
+      isFinished = epochCompleted === nEpochs || shouldStop;
+    }
+    return embedding;
   }
 
   /**
@@ -873,7 +1079,6 @@ export function cosine(x: Vector, y: Vector) {
  */
 class OptimizationState {
   currentEpoch = 0;
-  isInitialized = false;
 
   // Data tracked during optimization steps.
   headEmbedding: number[][] = [];
@@ -988,4 +1193,29 @@ export function resetLocalConnectivity(simplicialSet: matrix.SparseMatrix) {
     matrix.subtract(transpose, prodMatrix)
   );
   return matrix.eliminateZeros(simplicialSet);
+}
+
+/**
+ * Given indices and weights and an original embeddings
+ * initialize the positions of new points relative to the
+ * indices and weights (of their neighbors in the source data).
+ */
+export function initTransform(
+  indices: number[][],
+  weights: number[][],
+  embedding: Vectors
+) {
+  const result = utils
+    .zeros(indices.length)
+    .map(z => utils.zeros(embedding[0].length));
+
+  for (let i = 0; i < indices.length; i++) {
+    for (let j = 0; j < indices[0].length; j++) {
+      for (let d = 0; d < embedding[0].length; d++) {
+        const a = indices[i][j];
+        result[i][d] += weights[i][j] * embedding[a][d];
+      }
+    }
+  }
+  return result;
 }

@@ -18,6 +18,7 @@
  */
 
 import * as utils from './utils';
+import { basename } from 'path';
 
 /**
  * Internal 2-dimensional sparse matrix class
@@ -50,7 +51,7 @@ export class SparseMatrix {
 
     // TODO: Assert that dims are legit.
     this.nRows = dims[0];
-    this.nCols = dims[0];
+    this.nCols = dims[1];
   }
 
   private makeKey(row: number, col: number): string {
@@ -184,6 +185,13 @@ export function add(a: SparseMatrix, b: SparseMatrix): SparseMatrix {
  */
 export function subtract(a: SparseMatrix, b: SparseMatrix): SparseMatrix {
   return elementWise(a, b, (x, y) => x - y);
+}
+
+/**
+ * Element-wise maximum of two matrices
+ */
+export function maximum(a: SparseMatrix, b: SparseMatrix): SparseMatrix {
+  return elementWise(a, b, (x, y) => (x > y ? x : y));
 }
 
 /**
@@ -322,4 +330,44 @@ function elementWise(
 
   const dims = [a.nRows, a.nCols];
   return new SparseMatrix(rows, cols, vals, dims);
+}
+
+/**
+ * Helper function for getting data, indices, and inptr arrays from a sparse
+ * matrix to follow csr matrix conventions. Super inefficient (and kind of
+ * defeats the purpose of this convention) but a lot of the ported python tree
+ * search logic depends on this data format.
+ */
+export function getCSR(x: SparseMatrix) {
+  type Entry = { value: number; row: number; col: number };
+  const entries: Entry[] = [];
+
+  x.forEach((value, row, col) => {
+    entries.push({ value, row, col });
+  });
+
+  entries.sort((a, b) => {
+    if (a.row === b.row) {
+      return a.col - b.col;
+    } else {
+      return a.row - b.col;
+    }
+  });
+
+  const indices: number[] = [];
+  const values: number[] = [];
+  const indptr: number[] = [];
+
+  let currentRow = -1;
+  for (let i = 0; i < entries.length; i++) {
+    const { row, col, value } = entries[i];
+    if (row !== currentRow) {
+      currentRow = row;
+      indptr.push(i);
+    }
+    indices.push(col);
+    values.push(value);
+  }
+
+  return { indices, values, indptr };
 }
