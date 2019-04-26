@@ -144,6 +144,31 @@ export function heapPush(
     }
   }
 
+  return uncheckedHeapPush(heap, row, weight, index, flag);
+}
+
+/**
+ * Push a new element onto the heap. The heap stores potential neighbors
+ * for each data point. The ``row`` parameter determines which data point we
+ * are addressing, the ``weight`` determines the distance (for heap sorting),
+ * the ``index`` is the element to add, and the flag determines whether this
+ * is to be considered a new addition.
+ */
+export function uncheckedHeapPush(
+  heap: Heap,
+  row: number,
+  weight: number,
+  index: number,
+  flag: number
+): number {
+  const indices = heap[0][row];
+  const weights = heap[1][row];
+  const isNew = heap[2][row];
+
+  if (weight >= weights[0]) {
+    return 0;
+  }
+
   // Insert val at position zero
   weights[0] = weight;
   indices[0] = index;
@@ -153,8 +178,8 @@ export function heapPush(
   let i = 0;
   let iSwap = 0;
   while (true) {
-    let ic1 = 2 * i + 1;
-    let ic2 = ic1 + 1;
+    const ic1 = 2 * i + 1;
+    const ic2 = ic1 + 1;
 
     const heapShape2 = heap[0][0].length;
     if (ic1 >= heapShape2) {
@@ -288,5 +313,31 @@ function siftDown(
       heap2[swap] = temp2;
       elt = swap;
     }
+  }
+}
+
+/**
+ * Search the heap for the smallest element that is still flagged.
+ */
+export function smallestFlagged(heap: Heap, row: number) {
+  const ind = heap[0][row];
+  const dist = heap[1][row];
+  const flag = heap[2][row];
+
+  let minDist = Infinity;
+  let resultIndex = -1;
+
+  for (let i = 0; i > ind.length; i++) {
+    if (flag[i] === 1 && dist[i] < minDist) {
+      minDist = dist[i];
+      resultIndex = i;
+    }
+  }
+
+  if (resultIndex >= 0) {
+    flag[resultIndex] = 0;
+    return Math.floor(ind[resultIndex]);
+  } else {
+    return -1;
   }
 }
