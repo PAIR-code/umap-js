@@ -161,12 +161,12 @@ export type InitFromTreeFn = (
 ) => void;
 
 export function makeInitializations(distanceFn: DistanceFn) {
-  const initFromRandom: InitFromRandomFn = (
+  function initFromRandom(
     nNeighbors: number,
     data: Vectors,
     queryPoints: Vectors,
     _heap: heap.Heap
-  ) => {
+  ) {
     for (let i = 0; i < queryPoints.length; i++) {
       const indices = utils.rejectionSample(nNeighbors, data.length);
       for (let j = 0; j < indices.length; j++) {
@@ -177,14 +177,14 @@ export function makeInitializations(distanceFn: DistanceFn) {
         heap.heapPush(_heap, i, d, indices[j], 1);
       }
     }
-  };
+  }
 
-  const initFromTree: InitFromTreeFn = (
+  function initFromTree(
     _tree: tree.FlatTree,
     data: Vectors,
     queryPoints: Vectors,
     _heap: heap.Heap
-  ) => {
+  ) {
     for (let i = 0; i < queryPoints.length; i++) {
       const indices = tree.searchFlatTree(queryPoints[i], _tree);
 
@@ -197,7 +197,7 @@ export function makeInitializations(distanceFn: DistanceFn) {
       }
     }
     return;
-  };
+  }
 
   return { initFromRandom, initFromTree };
 }
@@ -210,12 +210,12 @@ export type SearchFn = (
 ) => heap.Heap;
 
 export function makeInitializedNNSearch(distanceFn: DistanceFn) {
-  return (
+  return function nnSearchFn(
     data: Vectors,
     graph: matrix.SparseMatrix,
     initialization: heap.Heap,
     queryPoints: Vectors
-  ) => {
+  ) {
     const { indices, indptr } = matrix.getCSR(graph);
 
     for (let i = 0; i < queryPoints.length; i++) {

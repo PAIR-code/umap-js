@@ -155,7 +155,7 @@ export function max2d(input: number[][]): number {
 }
 
 /**
- * Generate nSamples many integers from 0 to pool_size such that no
+ * Generate nSamples many integers from 0 to poolSize such that no
  * integer is selected twice. The duplication constraint is achieved via
  * rejection sampling.
  */
