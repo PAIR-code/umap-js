@@ -24,10 +24,12 @@ import {
   pairwiseMultiply,
   add,
   subtract,
+  maximum,
   multiplyScalar,
   eliminateZeros,
   normalize,
   NormType,
+  getCSR,
 } from '../src/matrix';
 
 describe('sparse matrix', () => {
@@ -133,6 +135,12 @@ describe('helper methods', () => {
     expect(X.toArray()).toEqual([[0, 0], [0, 0]]);
   });
 
+  test('element-wise maximum method', () => {
+    const I = multiplyScalar(identity([2, 2]), 8);
+    const X = maximum(A, I);
+    expect(X.toArray()).toEqual([[8, 2], [3, 8]]);
+  });
+
   test('scalar multiply method', () => {
     const X = multiplyScalar(A, 3);
     expect(X.toArray()).toEqual([[3, 6], [9, 12]]);
@@ -196,5 +204,12 @@ describe('normalize method', () => {
     ];
     const n = normalize(A);
     expect(n.toArray()).toEqual(expected);
+  });
+
+  test('getCSR function', () => {
+    const { indices, values, indptr } = getCSR(A);
+    expect(indices).toEqual([0, 1, 2, 0, 0, 1, 2, 1, 2]);
+    expect(values).toEqual([1, 2, 3, 7, 4, 5, 6, 8, 9]);
+    expect(indptr).toEqual([0, 3, 4, 7]);
   });
 });

@@ -30,4 +30,19 @@ describe('umap nnDescent methods', () => {
 
     expect(nnDescentFn instanceof Function).toBe(true);
   });
+
+  test('returns an initialized nearest neighbors search function', () => {
+    const nnSearchFn = nnDescent.makeInitializedNNSearch(euclidean);
+
+    expect(nnSearchFn instanceof Function).toBe(true);
+  });
+
+  test('returns initialization functions', () => {
+    const { initFromRandom, initFromTree } = nnDescent.makeInitializations(
+      euclidean
+    );
+
+    expect(initFromRandom instanceof Function).toBe(true);
+    expect(initFromTree instanceof Function).toBe(true);
+  });
 });

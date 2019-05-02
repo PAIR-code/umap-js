@@ -20,10 +20,13 @@
 import { UMAP, findABParams, euclidean, TargetMetric } from '../src/umap';
 import * as utils from '../src/utils';
 import {
+  additionalData,
+  additionalLabels,
   testData,
   testLabels,
   testResults2D,
   testResults3D,
+  transformResult2d,
 } from './test_data';
 import Prando from 'prando';
 
@@ -66,7 +69,6 @@ describe('UMAP', () => {
 
   test('UMAP step method', () => {
     const umap = new UMAP({ random });
-
     const nEpochs = umap.initializeFit(testData);
 
     for (let i = 0; i < nEpochs; i++) {
@@ -148,47 +150,90 @@ describe('UMAP', () => {
     expect(diff(params.b, b)).toBeLessThanOrEqual(epsilon);
   });
 
-  const computeMeanDistances = (vectors: number[][]) => {
-    return vectors.map(vector => {
-      return utils.mean(
-        vectors.map(other => {
-          return euclidean(vector, other);
-        })
-      );
-    });
-  };
+  test('transforms an additional point after fitting', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+    const embedding = umap.fit(testData);
 
-  /**
-   * Check the ratio between distances within a cluster and for all points to
-   * indicate "clustering"
-   */
-  const checkClusters = (
-    embeddings: number[][],
-    labels: number[],
-    expectedClusterRatio: number
-  ) => {
-    const distances = computeMeanDistances(embeddings);
-    const overallMeanDistance = utils.mean(distances);
+    const additional = additionalData[0];
+    const transformed = umap.transform([additional]);
 
-    const embeddingsByLabel = new Map<number, number[][]>();
-    for (let i = 0; i < labels.length; i++) {
-      const label = labels[i];
-      const embedding = embeddings[i];
-      const group = embeddingsByLabel.get(label) || [];
-      group.push(embedding);
-      embeddingsByLabel.set(label, group);
+    const nearestIndex = getNearestNeighborIndex(embedding, transformed[0]);
+    const nearestLabel = testLabels[nearestIndex];
+    expect(nearestLabel).toEqual(additionalLabels[0]);
+  });
+
+  test('transforms additional points after fitting', () => {
+    const umap = new UMAP({ random, nComponents: 2 });
+    const embedding = umap.fit(testData);
+
+    const transformed = umap.transform(additionalData);
+
+    for (let i = 0; i < transformed.length; i++) {
+      const nearestIndex = getNearestNeighborIndex(embedding, transformed[i]);
+      const nearestLabel = testLabels[nearestIndex];
+      expect(nearestLabel).toEqual(additionalLabels[i]);
     }
-
-    let totalIntraclusterDistance = 0;
-    for (let label of embeddingsByLabel.keys()) {
-      const group = embeddingsByLabel.get(label)!;
-      const distances = computeMeanDistances(group);
-      const meanDistance = utils.mean(distances);
-      totalIntraclusterDistance += meanDistance * group.length;
-    }
-    const meanInterclusterDistance =
-      totalIntraclusterDistance / embeddings.length;
-    const clusterRatio = meanInterclusterDistance / overallMeanDistance;
-    expect(clusterRatio).toBeLessThan(expectedClusterRatio);
-  };
+  });
 });
+
+function computeMeanDistances(vectors: number[][]) {
+  return vectors.map(vector => {
+    return utils.mean(
+      vectors.map(other => {
+        return euclidean(vector, other);
+      })
+    );
+  });
+}
+
+/**
+ * Check the ratio between distances within a cluster and for all points to
+ * indicate "clustering"
+ */
+function checkClusters(
+  embeddings: number[][],
+  labels: number[],
+  expectedClusterRatio: number
+) {
+  const distances = computeMeanDistances(embeddings);
+  const overallMeanDistance = utils.mean(distances);
+
+  const embeddingsByLabel = new Map<number, number[][]>();
+  for (let i = 0; i < labels.length; i++) {
+    const label = labels[i];
+    const embedding = embeddings[i];
+    const group = embeddingsByLabel.get(label) || [];
+    group.push(embedding);
+    embeddingsByLabel.set(label, group);
+  }
+
+  let totalIntraclusterDistance = 0;
+  for (let label of embeddingsByLabel.keys()) {
+    const group = embeddingsByLabel.get(label)!;
+    const distances = computeMeanDistances(group);
+    const meanDistance = utils.mean(distances);
+    totalIntraclusterDistance += meanDistance * group.length;
+  }
+  const meanInterclusterDistance =
+    totalIntraclusterDistance / embeddings.length;
+  const clusterRatio = meanInterclusterDistance / overallMeanDistance;
+  expect(clusterRatio).toBeLessThan(expectedClusterRatio);
+}
+
+function getNearestNeighborIndex(
+  items: number[][],
+  otherPoint: number[],
+  distanceFn = euclidean
+) {
+  const nearest = items.reduce(
+    (result, point, pointIndex) => {
+      const pointDistance = distanceFn(point, otherPoint);
+      if (pointDistance < result.distance) {
+        return { index: pointIndex, distance: pointDistance };
+      }
+      return result;
+    },
+    { index: 0, distance: Infinity }
+  );
+  return nearest.index;
+}

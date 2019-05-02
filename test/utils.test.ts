@@ -91,4 +91,21 @@ describe('umap utils', () => {
     const results = utils.max2d([[1, 2, 3], [4, 5, 6]]);
     expect(results).toEqual(6);
   });
+
+  test('rejection sample', () => {
+    const results = utils.rejectionSample(5, 10);
+    const entries = new Set<number>();
+    for (const r of results) {
+      expect(entries.has(r)).toBe(false);
+      entries.add(r);
+    }
+  });
+
+  test('reshape2d function', () => {
+    const input = [1, 2, 3, 4, 5, 6];
+    expect(utils.reshape2d(input, 2, 3)).toEqual([[1, 2, 3], [4, 5, 6]]);
+    expect(utils.reshape2d(input, 3, 2)).toEqual([[1, 2], [3, 4], [5, 6]]);
+
+    expect(() => utils.reshape2d(input, 3, 3)).toThrow();
+  });
 });

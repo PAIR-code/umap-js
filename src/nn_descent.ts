@@ -58,6 +58,8 @@
  */
 
 import * as heap from './heap';
+import * as matrix from './matrix';
+import * as tree from './tree';
 import * as utils from './utils';
 import { Vectors, DistanceFn } from './umap';
 
@@ -142,4 +144,122 @@ export function makeNNDescent(distanceFn: DistanceFn, random: () => number) {
     const sorted = heap.deheapSort(currentGraph);
     return sorted;
   };
+}
+
+export type InitFromRandomFn = (
+  nNeighbors: number,
+  data: Vectors,
+  queryPoints: Vectors,
+  _heap: heap.Heap
+) => void;
+
+export type InitFromTreeFn = (
+  _tree: tree.FlatTree,
+  data: Vectors,
+  queryPoints: Vectors,
+  _heap: heap.Heap
+) => void;
+
+export function makeInitializations(distanceFn: DistanceFn) {
+  function initFromRandom(
+    nNeighbors: number,
+    data: Vectors,
+    queryPoints: Vectors,
+    _heap: heap.Heap
+  ) {
+    for (let i = 0; i < queryPoints.length; i++) {
+      const indices = utils.rejectionSample(nNeighbors, data.length);
+      for (let j = 0; j < indices.length; j++) {
+        if (indices[j] < 0) {
+          continue;
+        }
+        const d = distanceFn(data[indices[j]], queryPoints[i]);
+        heap.heapPush(_heap, i, d, indices[j], 1);
+      }
+    }
+  }
+
+  function initFromTree(
+    _tree: tree.FlatTree,
+    data: Vectors,
+    queryPoints: Vectors,
+    _heap: heap.Heap
+  ) {
+    for (let i = 0; i < queryPoints.length; i++) {
+      const indices = tree.searchFlatTree(queryPoints[i], _tree);
+
+      for (let j = 0; j < indices.length; j++) {
+        if (indices[j] < 0) {
+          return;
+        }
+        const d = distanceFn(data[indices[j]], queryPoints[i]);
+        heap.heapPush(_heap, i, d, indices[j], 1);
+      }
+    }
+    return;
+  }
+
+  return { initFromRandom, initFromTree };
+}
+
+export type SearchFn = (
+  data: Vectors,
+  graph: matrix.SparseMatrix,
+  initialization: heap.Heap,
+  queryPoints: Vectors
+) => heap.Heap;
+
+export function makeInitializedNNSearch(distanceFn: DistanceFn) {
+  return function nnSearchFn(
+    data: Vectors,
+    graph: matrix.SparseMatrix,
+    initialization: heap.Heap,
+    queryPoints: Vectors
+  ) {
+    const { indices, indptr } = matrix.getCSR(graph);
+
+    for (let i = 0; i < queryPoints.length; i++) {
+      const tried = new Set(initialization[0][i]);
+      while (true) {
+        // Find smallest flagged vertex
+        const vertex = heap.smallestFlagged(initialization, i);
+
+        if (vertex === -1) {
+          break;
+        }
+        const candidates = indices.slice(indptr[vertex], indptr[vertex + 1]);
+        for (const candidate of candidates) {
+          if (
+            candidate === vertex ||
+            candidate === -1 ||
+            tried.has(candidate)
+          ) {
+            continue;
+          }
+          const d = distanceFn(data[candidate], queryPoints[i]);
+          heap.uncheckedHeapPush(initialization, i, d, candidate, 1);
+          tried.add(candidate);
+        }
+      }
+    }
+    return initialization;
+  };
+}
+
+export function initializeSearch(
+  forest: tree.FlatTree[],
+  data: Vectors,
+  queryPoints: Vectors,
+  nNeighbors: number,
+  initFromRandom: InitFromRandomFn,
+  initFromTree: InitFromTreeFn
+) {
+  const results = heap.makeHeap(queryPoints.length, nNeighbors);
+  initFromRandom(nNeighbors, data, queryPoints, results);
+  if (forest) {
+    for (let tree of forest) {
+      initFromTree(tree, data, queryPoints, results);
+    }
+  }
+  return results;
 }
