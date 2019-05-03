@@ -1,0 +1,16 @@
+.vscode/
+.DS_Store
+
+node_modules/
+webpack/
+
+.prettierignore
+.prettierrc
+.travis.yml
+CONTRIBUTING.md
+jest.config.js
+tsconfig.json
+yarn.lock
+
+npm-debug.log
+yarn-error.log
