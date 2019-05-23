@@ -62,7 +62,7 @@ import * as matrix from './matrix';
 import * as nnDescent from './nn_descent';
 import * as tree from './tree';
 import * as utils from './utils';
-import * as LM from 'ml-levenberg-marquardt';
+import LM from 'ml-levenberg-marquardt';
 
 export type DistanceFn = (x: Vector, y: Vector) => number;
 export type EpochCallback = (epoch: number) => boolean | void;

@@ -10,6 +10,7 @@
     "baseUrl": ".",
     "target": "es5",
     "module": "commonjs",
+    "esModuleInterop": true,
     "strict": true,
     "noImplicitAny": false,
     "removeComments": true,
