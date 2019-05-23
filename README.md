@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/PAIR-code/umap-js.svg?branch=master)](https://travis-ci.org/PAIR-code/umap-js)
+[![Build Status](https://travis-ci.com/PAIR-code/umap-js.svg?branch=master)](https://travis-ci.org/PAIR-code/umap-js)
 
 # UMAP-JS
 
