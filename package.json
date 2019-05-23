@@ -13,8 +13,7 @@
   "scripts": {
     "test": "jest",
     "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts",
-    "build": "rm -rf dist && tsc && yarn bundle",
-    "publish": "yarn build && yarn publish"
+    "build": "rm -rf dist && tsc && yarn bundle"
   },
   "devDependencies": {
     "@types/jest": "^24.0.3",
