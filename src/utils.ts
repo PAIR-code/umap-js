@@ -17,17 +17,19 @@
  * ==============================================================================
  */
 
+import { RandomFn } from './umap';
+
 /**
  * Simple random integer function
  */
-export function tauRandInt(n: number, random = Math.random) {
+export function tauRandInt(n: number, random: RandomFn) {
   return Math.floor(random() * n);
 }
 
 /**
  * Simple random float function
  */
-export function tauRand(random = Math.random) {
+export function tauRand(random: RandomFn) {
   return random();
 }
 /**
@@ -132,12 +134,16 @@ export function max2d(input: number[][]): number {
  * integer is selected twice. The duplication constraint is achieved via
  * rejection sampling.
  */
-export function rejectionSample(nSamples: number, poolSize: number): number[] {
+export function rejectionSample(
+  nSamples: number,
+  poolSize: number,
+  random: RandomFn
+): number[] {
   const result = zeros(nSamples);
   for (let i = 0; i < nSamples; i++) {
     let rejectSample = true;
     while (rejectSample) {
-      const j = tauRandInt(poolSize);
+      const j = tauRandInt(poolSize, random);
       let broken = false;
       for (let k = 0; k < i; k++) {
         if (j === result[k]) {

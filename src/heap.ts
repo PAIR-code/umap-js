@@ -57,7 +57,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import { RandomFn } from './umap';
 import * as utils from './utils';
+
 export type Heap = number[][][];
 
 /**
@@ -92,7 +94,7 @@ export function makeHeap(nPoints: number, size: number): Heap {
 export function rejectionSample(
   nSamples: number,
   poolSize: number,
-  random: () => number
+  random: RandomFn
 ) {
   const result = utils.zeros(nSamples);
   for (let i = 0; i < nSamples; i++) {
@@ -227,7 +229,7 @@ export function buildCandidates(
   nVertices: number,
   nNeighbors: number,
   maxCandidates: number,
-  random: () => number
+  random: RandomFn
 ) {
   const candidateNeighbors = makeHeap(nVertices, maxCandidates);
   for (let i = 0; i < nVertices; i++) {

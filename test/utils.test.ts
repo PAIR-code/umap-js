@@ -18,8 +18,12 @@
  */
 
 import * as utils from '../src/utils';
+import Prando from 'prando';
 
 describe('umap utils', () => {
+  const prando = new Prando(42);
+  const random = () => prando.next();
+
   test('norm function', () => {
     const results = utils.norm([1, 2, 3, 4]);
     expect(results).toEqual(Math.sqrt(30));
@@ -81,7 +85,7 @@ describe('umap utils', () => {
   });
 
   test('rejection sample', () => {
-    const results = utils.rejectionSample(5, 10);
+    const results = utils.rejectionSample(5, 10, random);
     const entries = new Set<number>();
     for (const r of results) {
       expect(entries.has(r)).toBe(false);
