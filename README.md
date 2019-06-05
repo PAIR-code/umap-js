@@ -21,7 +21,7 @@ yarn add umap-js
 
 #### Synchronous fitting
 
-```typescript
+```javascript
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
@@ -30,7 +30,7 @@ const embedding = umap.fit(data);
 
 #### Asynchronous fitting
 
-```typescript
+```javascript
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
@@ -39,7 +39,7 @@ const embedding = await umap.fitAsync(data, callback);
 
 #### Step-by-step fitting
 
-```typescript
+```javascript
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
@@ -52,7 +52,7 @@ const embedding = umap.getEmbedding();
 
 #### Supervised projection using labels
 
-```typescript
+```javascript
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
@@ -62,7 +62,7 @@ const embedding = umap.fit(data);
 
 #### Transforming additional points after fitting
 
-```typescript
+```javascript
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
