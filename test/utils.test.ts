@@ -24,14 +24,6 @@ describe('umap utils', () => {
   const prando = new Prando(42);
   const random = () => prando.next();
 
-  test('randomNormal2d', () => {
-    const results = utils.randomNormal2d(0, 1, [2, 2], random);
-    expect(results).toEqual([
-      [0.6269684491034108, -1.1184153575598885],
-      [-0.8717275786498884, -0.6356319013602585],
-    ]);
-  });
-
   test('norm function', () => {
     const results = utils.norm([1, 2, 3, 4]);
     expect(results).toEqual(Math.sqrt(30));
@@ -93,7 +85,7 @@ describe('umap utils', () => {
   });
 
   test('rejection sample', () => {
-    const results = utils.rejectionSample(5, 10);
+    const results = utils.rejectionSample(5, 10, random);
     const entries = new Set<number>();
     for (const r of results) {
       expect(entries.has(r)).toBe(false);

@@ -65,6 +65,7 @@ import * as utils from './utils';
 import LM from 'ml-levenberg-marquardt';
 
 export type DistanceFn = (x: Vector, y: Vector) => number;
+export type RandomFn = () => number;
 export type EpochCallback = (epoch: number) => boolean | void;
 export type Vector = number[];
 export type Vectors = Vector[];
@@ -142,7 +143,7 @@ export interface UMAPParameters {
    * The pseudo-random number generator used by the stochastic parts of the
    * algorithm.
    */
-  random?: () => number;
+  random?: RandomFn;
   /**
    * Interpolate between (fuzzy) union and intersection as the set operation
    * used to combine local fuzzy simplicial sets to obtain a global fuzzy
@@ -413,7 +414,8 @@ export class UMAP {
       toTransform,
       nNeighbors,
       this.initFromRandom,
-      this.initFromTree
+      this.initFromTree,
+      this.random
     );
 
     const result = this.search(rawData, this.searchGraph, init, toTransform);

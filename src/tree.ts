@@ -58,7 +58,7 @@
  */
 
 import * as utils from './utils';
-import { Vector, Vectors } from './umap';
+import { RandomFn, Vector, Vectors } from './umap';
 
 /**
  * Tree functionality for approximating nearest neighbors
@@ -88,7 +88,7 @@ export function makeForest(
   data: Vectors,
   nNeighbors: number,
   nTrees: number,
-  random: () => number
+  random: RandomFn
 ) {
   const leafSize = Math.max(10, nNeighbors);
 
@@ -108,7 +108,7 @@ function makeTree(
   data: Vectors,
   leafSize = 30,
   n: number,
-  random: () => number
+  random: RandomFn
 ): RandomProjectionTreeNode {
   const indices = utils.range(data.length);
   const tree = makeEuclideanTree(data, indices, leafSize, n, random);
@@ -120,7 +120,7 @@ function makeEuclideanTree(
   indices: number[],
   leafSize = 30,
   q: number,
-  random: () => number
+  random: RandomFn
 ): RandomProjectionTreeNode {
   if (indices.length > leafSize) {
     const splitResults = euclideanRandomProjectionSplit(data, indices, random);
@@ -160,7 +160,7 @@ function makeEuclideanTree(
 function euclideanRandomProjectionSplit(
   data: Vectors,
   indices: number[],
-  random: () => number
+  random: RandomFn
 ) {
   const dim = data[0].length;
 
@@ -343,14 +343,19 @@ export function makeLeafArray(rpForest: FlatTree[]): number[][] {
 /**
  * Selects the side of the tree to search during flat tree search.
  */
-function selectSide(hyperplane: number[], offset: number, point: Vector) {
+function selectSide(
+  hyperplane: number[],
+  offset: number,
+  point: Vector,
+  random: RandomFn
+) {
   let margin = offset;
   for (let d = 0; d < point.length; d++) {
     margin += hyperplane[d] * point[d];
   }
 
   if (margin === 0) {
-    const side = utils.tauRandInt(2);
+    const side = utils.tauRandInt(2, random);
     return side;
   } else if (margin > 0) {
     return 0;
@@ -362,10 +367,19 @@ function selectSide(hyperplane: number[], offset: number, point: Vector) {
 /**
  * Searches a flattened rp-tree for a point.
  */
-export function searchFlatTree(point: Vector, tree: FlatTree) {
+export function searchFlatTree(
+  point: Vector,
+  tree: FlatTree,
+  random: RandomFn
+) {
   let node = 0;
   while (tree.children[node][0] > 0) {
-    const side = selectSide(tree.hyperplanes[node], tree.offsets[node], point);
+    const side = selectSide(
+      tree.hyperplanes[node],
+      tree.offsets[node],
+      point,
+      random
+    );
     if (side === 0) {
       node = tree.children[node][0];
     } else {

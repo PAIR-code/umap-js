@@ -61,12 +61,12 @@ import * as heap from './heap';
 import * as matrix from './matrix';
 import * as tree from './tree';
 import * as utils from './utils';
-import { Vectors, DistanceFn } from './umap';
+import { RandomFn, Vectors, DistanceFn } from './umap';
 
 /**
  * Create a version of nearest neighbor descent.
  */
-export function makeNNDescent(distanceFn: DistanceFn, random: () => number) {
+export function makeNNDescent(distanceFn: DistanceFn, random: RandomFn) {
   return function nNDescent(
     data: Vectors,
     leafArray: Vectors,
@@ -150,14 +150,16 @@ export type InitFromRandomFn = (
   nNeighbors: number,
   data: Vectors,
   queryPoints: Vectors,
-  _heap: heap.Heap
+  _heap: heap.Heap,
+  random: RandomFn
 ) => void;
 
 export type InitFromTreeFn = (
   _tree: tree.FlatTree,
   data: Vectors,
   queryPoints: Vectors,
-  _heap: heap.Heap
+  _heap: heap.Heap,
+  random: RandomFn
 ) => void;
 
 export function makeInitializations(distanceFn: DistanceFn) {
@@ -165,10 +167,11 @@ export function makeInitializations(distanceFn: DistanceFn) {
     nNeighbors: number,
     data: Vectors,
     queryPoints: Vectors,
-    _heap: heap.Heap
+    _heap: heap.Heap,
+    random: RandomFn
   ) {
     for (let i = 0; i < queryPoints.length; i++) {
-      const indices = utils.rejectionSample(nNeighbors, data.length);
+      const indices = utils.rejectionSample(nNeighbors, data.length, random);
       for (let j = 0; j < indices.length; j++) {
         if (indices[j] < 0) {
           continue;
@@ -183,10 +186,11 @@ export function makeInitializations(distanceFn: DistanceFn) {
     _tree: tree.FlatTree,
     data: Vectors,
     queryPoints: Vectors,
-    _heap: heap.Heap
+    _heap: heap.Heap,
+    random: RandomFn
   ) {
     for (let i = 0; i < queryPoints.length; i++) {
-      const indices = tree.searchFlatTree(queryPoints[i], _tree);
+      const indices = tree.searchFlatTree(queryPoints[i], _tree, random);
 
       for (let j = 0; j < indices.length; j++) {
         if (indices[j] < 0) {
@@ -252,13 +256,14 @@ export function initializeSearch(
   queryPoints: Vectors,
   nNeighbors: number,
   initFromRandom: InitFromRandomFn,
-  initFromTree: InitFromTreeFn
+  initFromTree: InitFromTreeFn,
+  random: RandomFn
 ) {
   const results = heap.makeHeap(queryPoints.length, nNeighbors);
-  initFromRandom(nNeighbors, data, queryPoints, results);
+  initFromRandom(nNeighbors, data, queryPoints, results, random);
   if (forest) {
     for (let tree of forest) {
-      initFromTree(tree, data, queryPoints, results);
+      initFromTree(tree, data, queryPoints, results, random);
     }
   }
   return results;

@@ -21,6 +21,7 @@ import {
   UMAP,
   findABParams,
   euclidean,
+  RandomFn,
   TargetMetric,
   Vector,
 } from '../src/umap';
@@ -32,12 +33,11 @@ import {
   testLabels,
   testResults2D,
   testResults3D,
-  transformResult2d,
 } from './test_data';
 import Prando from 'prando';
 
 describe('UMAP', () => {
-  let random: () => number;
+  let random: RandomFn;
 
   // Expected "clustering" ratios, representing inter-cluster distance vs mean
   // distance to other points.
