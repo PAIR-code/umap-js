@@ -9,7 +9,6 @@ Uniform Manifold Approximation and Projection (UMAP) is a dimension reduction te
 There are a few important differences between the python implementation and the JS port.
 
 - The optimization step is seeded with a random embedding rather than a spectral embedding. This gives comparable results for smaller datasets. The spectral embedding computation relies on efficient eigenvalue / eigenvector computations that are not easily done in JS.
-- The only distance function used is euclidean distance.
 - There is no specialized functionality for angular distances or sparse data representations.
 
 ### Usage
@@ -75,14 +74,15 @@ const transformed = umap.transform(additionalData);
 
 The UMAP constructor can accept a number of hyperparameters via a `UMAPParameters` object, with the most common described below. See [umap.ts](./src/umap.ts) for more details.
 
-| Parameter     | Description                                                                                                                         | default                  |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `nComponents` | The number of components (dimensions) to project the data to                                                                        | 2                        |
-| `nEpochs`     | The number of epochs to optimize embeddings via SGD                                                                                 | (computed automatically) |
-| `nNeighbors`  | The number of nearest neighbors to construct the fuzzy manifold                                                                     | 15                       |
-| `minDist`     | The effective minimum distance between embedded points, used with `spread` to control the clumped/dispersed nature of the embedding | 0.1                      |
-| `spread`      | The effective scale of embedded points, used with `minDist` to control the clumped/dispersed nature of the embedding                | 1.0                      |
-| `random`      | A pseudo-random-number generator for controlling stochastic processes                                                               | `Math.random`            |
+| Parameter     | Description                                                                                                                         | default                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `nComponents` | The number of components (dimensions) to project the data to                                                                        | 2                                                                                                                   |
+| `nEpochs`     | The number of epochs to optimize embeddings via SGD                                                                                 | (computed automatically)                                                                                            |
+| `nNeighbors`  | The number of nearest neighbors to construct the fuzzy manifold                                                                     | 15                                                                                                                  |
+| `minDist`     | The effective minimum distance between embedded points, used with `spread` to control the clumped/dispersed nature of the embedding | 0.1                                                                                                                 |
+| `spread`      | The effective scale of embedded points, used with `minDist` to control the clumped/dispersed nature of the embedding                | 1.0                                                                                                                 |
+| `random`      | A pseudo-random-number generator for controlling stochastic processes                                                               | `Math.random`                                                                                                       |
+| `distanceFn`  | A custom distance function to use                                                                                                   | [`euclidean`](https://github.com/PAIR-code/umap-js/blob/73f181c8d7b58b051006aff7e492e259d6a32251/src/umap.ts#L1076) |
 
 ```typescript
 const umap = new UMAP({
