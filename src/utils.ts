@@ -17,33 +17,6 @@
  * ==============================================================================
  */
 
-function generateGaussian(mean: number, std: number, rng = Math.random) {
-  const u1 = tauRand(rng);
-  const u2 = tauRand(rng);
-
-  const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(Math.PI * 2 * u2);
-
-  return z0 * std + mean;
-}
-
-/**
- * Creates a random normal distribution with given mean and stdev.
- */
-export function randomNormal2d(
-  mean = 0,
-  stdev = 1,
-  size: number[] = [1, 1],
-  rng = Math.random
-) {
-  return Array(size[0])
-    .fill(0)
-    .map(() => {
-      return Array(size[1])
-        .fill(0)
-        .map(() => generateGaussian(mean, stdev, rng));
-    });
-}
-
 /**
  * Simple random integer function
  */
