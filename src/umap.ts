@@ -79,6 +79,11 @@ const MIN_K_DIST_SCALE = 1e-3;
 
 export interface UMAPParameters {
   /**
+   * The distance function with which to assess nearest neighbors, defaults
+   * to euclidean distance.
+   */
+  distanceFn?: DistanceFn
+  /**
    * The initial learning rate for the embedding optimization.
    */
   learningRate?: number;
@@ -252,6 +257,7 @@ export class UMAP {
       if (params[key] !== undefined) this[key] = params[key];
     };
 
+    setParam('distanceFn');
     setParam('learningRate');
     setParam('localConnectivity');
     setParam('minDist');

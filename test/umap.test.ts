@@ -17,7 +17,13 @@
  * ==============================================================================
  */
 
-import { UMAP, findABParams, euclidean, TargetMetric } from '../src/umap';
+import {
+  UMAP,
+  findABParams,
+  euclidean,
+  TargetMetric,
+  Vector,
+} from '../src/umap';
 import * as utils from '../src/utils';
 import {
   additionalData,
@@ -173,6 +179,28 @@ describe('UMAP', () => {
       const nearestLabel = testLabels[nearestIndex];
       expect(nearestLabel).toEqual(additionalLabels[i]);
     }
+  });
+
+  test('Allows a custom distance function to be used', () => {
+    let nInvocations = 0;
+    // Manhattan distance function, with invocation counter
+    const manhattanDistance = (a: Vector, b: Vector) => {
+      nInvocations += 1;
+      let distance = 0;
+      for (let i = 0; i < a.length; i++) {
+        distance += Math.abs(a[i] - b[i]);
+      }
+      return distance;
+    };
+
+    const umap = new UMAP({
+      random,
+      nComponents: 2,
+      distanceFn: manhattanDistance,
+    });
+    umap.fit(testData);
+
+    expect(nInvocations).toBeGreaterThan(0);
   });
 });
 
