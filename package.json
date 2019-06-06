@@ -9,6 +9,8 @@
   "license": "MIT",
   "repository": "PAIR-code/umap-js",
   "main": "dist/index.js",
+  "unpkg": "lib/umap-js.min.js",
+  "jsdelivr": "lib/umap-js.min.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
