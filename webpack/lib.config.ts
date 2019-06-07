@@ -19,6 +19,7 @@ export default {
   },
   output: {
     filename: 'umap-js.js',
+    libraryTarget: 'umd',
     path: path.resolve(__dirname, '../lib'),
   },
   optimization: { minimize: false },

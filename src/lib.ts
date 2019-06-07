@@ -17,5 +17,4 @@
  * ==============================================================================
  */
 
-import { UMAP } from './umap';
-(window as any).UMAP = UMAP;
+export { UMAP } from './umap';
