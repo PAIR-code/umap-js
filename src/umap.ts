@@ -83,7 +83,7 @@ export interface UMAPParameters {
    * The distance function with which to assess nearest neighbors, defaults
    * to euclidean distance.
    */
-  distanceFn?: DistanceFn
+  distanceFn?: DistanceFn;
   /**
    * The initial learning rate for the embedding optimization.
    */
@@ -1023,7 +1023,7 @@ export class UMAP {
           const shouldStop = epochCallback(epochCompleted) === false;
           const isFinished = epochCompleted === nEpochs;
           if (!shouldStop && !isFinished) {
-            step();
+            setTimeout(() => step(), 0);
           } else {
             return resolve(isFinished);
           }
@@ -1031,7 +1031,7 @@ export class UMAP {
           reject(err);
         }
       };
-      step();
+      setTimeout(() => step(), 0);
     });
   }
 
