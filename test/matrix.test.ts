@@ -36,7 +36,7 @@ describe('sparse matrix', () => {
   test('constructs a sparse matrix from rows/cols/vals ', () => {
     const rows = [0, 0, 1, 1];
     const cols = [0, 1, 0, 1];
-    const vals = [1, 2];
+    const vals = [1, 2, 3, 4];
     const dims = [2, 2];
     const matrix = new SparseMatrix(rows, cols, vals, dims);
     expect(matrix.getRows()).toEqual(rows);
