@@ -58,6 +58,21 @@ describe('sparse matrix', () => {
     expect(matrix.get(0, 1)).toEqual(9);
   });
 
+  test('sparse matrix has getAll method', () => {
+    const rows = [0, 0, 1, 1];
+    const cols = [0, 1, 0, 1];
+    const vals = [1, 2, 3, 4];
+    const dims = [2, 2];
+    const matrix = new SparseMatrix(rows, cols, vals, dims);
+
+    expect(matrix.getAll()).toEqual([
+      { row: 0, col: 0, value: 1 },
+      { row: 0, col: 1, value: 2 },
+      { row: 1, col: 0, value: 3 },
+      { row: 1, col: 1, value: 4 }
+    ]);
+  });
+
   test('sparse matrix has toArray method', () => {
     const rows = [0, 0, 1, 1];
     const cols = [0, 1, 0, 1];
