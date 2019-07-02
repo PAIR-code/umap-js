@@ -811,12 +811,12 @@ export class UMAP {
     const tail: number[] = [];
     const rowColValues = graph.getAll();
     for (let i = 0; i < rowColValues.length; i++) {
-        const entry = rowColValues[i];
-        if (entry.value) {
-            weights.push(entry.value);
-            tail.push(entry.row);
-            head.push(entry.col);
-        }
+      const entry = rowColValues[i];
+      if (entry.value) {
+        weights.push(entry.value);
+        tail.push(entry.row);
+        head.push(entry.col);
+      }
     }    
     const epochsPerSample = this.makeEpochsPerSample(weights, nEpochs);
 
