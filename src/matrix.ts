@@ -44,8 +44,8 @@ export class SparseMatrix {
     this.nRows = dims[0];
     this.nCols = dims[1];
     for (let i = 0; i < values.length; i++) {
-      var row = rows[i];
-      var col = cols[i];
+      const row = rows[i];
+      const col = cols[i];
       this.checkDims(row, col);
       const key = this.makeKey(row, col);
       this.entries.set(key, { value: values[i], row, col });

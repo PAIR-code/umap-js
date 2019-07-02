@@ -809,7 +809,7 @@ export class UMAP {
     const weights: number[] = [];
     const head: number[] = [];
     const tail: number[] = [];
-    var rowColValues = graph.getAll();
+    const rowColValues = graph.getAll();
     for (let i = 0; i < rowColValues.length; i++) {
         const entry = rowColValues[i];
         if (entry.value) {
