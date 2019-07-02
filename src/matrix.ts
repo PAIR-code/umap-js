@@ -83,11 +83,20 @@ export class SparseMatrix {
     }
   }
 
-  getAll(): { value: number; row: number; col: number }[] {
-    let rowColValues: Entry[] = [];
+  getAll(ordered = true): { value: number; row: number; col: number }[] {
+    const rowColValues: Entry[] = [];
     this.entries.forEach((value) => {
       rowColValues.push(value);
     });
+    if (ordered) { // Ordering the result isn't required for processing but it does make it easier to write tests
+      rowColValues.sort((a, b) => {
+        if (a.row === b.row) {
+          return a.col - b.col;
+        } else {
+          return a.row - b.row;
+        }
+      });
+    }
     return rowColValues;
   }
 
