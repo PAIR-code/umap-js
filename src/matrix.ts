@@ -19,15 +19,13 @@
 
 import * as utils from './utils';
 
+type Entry = { value: number; row: number; col: number };
+
 /**
  * Internal 2-dimensional sparse matrix class
  */
 export class SparseMatrix {
-  private rows: number[];
-  private cols: number[];
-  private values: number[];
-
-  private entries = new Map<string, number>();
+  private entries = new Map<string, Entry>();
 
   readonly nRows: number = 0;
   readonly nCols: number = 0;
@@ -38,19 +36,20 @@ export class SparseMatrix {
     values: number[],
     dims: number[]
   ) {
-    // TODO: Assert that rows / cols / vals are the same length.
-    this.rows = [...rows];
-    this.cols = [...cols];
-    this.values = [...values];
-
-    for (let i = 0; i < values.length; i++) {
-      const key = this.makeKey(this.rows[i], this.cols[i]);
-      this.entries.set(key, i);
+    if ((rows.length !== cols.length) || (rows.length !== values.length)) {
+      throw new Error("rows, cols and values arrays must all have the same length");
     }
 
     // TODO: Assert that dims are legit.
     this.nRows = dims[0];
     this.nCols = dims[1];
+    for (let i = 0; i < values.length; i++) {
+      const row = rows[i];
+      const col = cols[i];
+      this.checkDims(row, col);
+      const key = this.makeKey(row, col);
+      this.entries.set(key, { value: values[i], row, col });
+    }
   }
 
   private makeKey(row: number, col: number): string {
@@ -60,7 +59,7 @@ export class SparseMatrix {
   private checkDims(row: number, col: number) {
     const withinBounds = row < this.nRows && col < this.nCols;
     if (!withinBounds) {
-      throw new Error('array index out of bounds');
+      throw new Error('row and/or col specified outside of matrix dimensions');
     }
   }
 
@@ -68,13 +67,9 @@ export class SparseMatrix {
     this.checkDims(row, col);
     const key = this.makeKey(row, col);
     if (!this.entries.has(key)) {
-      this.rows.push(row);
-      this.cols.push(col);
-      this.values.push(value);
-      this.entries.set(key, this.values.length - 1);
+      this.entries.set(key, { value, row, col });
     } else {
-      const index = this.entries.get(key)!;
-      this.values[index] = value;
+      this.entries.get(key)!.value = value;
     }
   }
 
@@ -82,11 +77,27 @@ export class SparseMatrix {
     this.checkDims(row, col);
     const key = this.makeKey(row, col);
     if (this.entries.has(key)) {
-      const index = this.entries.get(key)!;
-      return this.values[index];
+      return this.entries.get(key)!.value;
     } else {
       return defaultValue;
     }
+  }
+
+  getAll(ordered = true): { value: number; row: number; col: number }[] {
+    const rowColValues: Entry[] = [];
+    this.entries.forEach((value) => {
+      rowColValues.push(value);
+    });
+    if (ordered) { // Ordering the result isn't required for processing but it does make it easier to write tests
+      rowColValues.sort((a, b) => {
+        if (a.row === b.row) {
+          return a.col - b.col;
+        } else {
+          return a.row - b.row;
+        }
+      });
+    }
+    return rowColValues;
   }
 
   getDims(): number[] {
@@ -94,30 +105,28 @@ export class SparseMatrix {
   }
 
   getRows(): number[] {
-    return [...this.rows];
+    return Array.from(this.entries, ([key, value]) => value.row);
   }
 
   getCols(): number[] {
-    return [...this.cols];
+    return Array.from(this.entries, ([key, value]) => value.col);
   }
 
   getValues(): number[] {
-    return [...this.values];
+    return Array.from(this.entries, ([key, value]) => value.value);
   }
 
   forEach(fn: (value: number, row: number, col: number) => void): void {
-    for (let i = 0; i < this.values.length; i++) {
-      fn(this.values[i], this.rows[i], this.cols[i]);
-    }
+    this.entries.forEach((value) => fn(value.value, value.row, value.col));
   }
 
   map(fn: (value: number, row: number, col: number) => number): SparseMatrix {
     let vals: number[] = [];
-    for (let i = 0; i < this.values.length; i++) {
-      vals.push(fn(this.values[i], this.rows[i], this.cols[i]));
-    }
+    this.entries.forEach((value) => {
+      vals.push(fn(value.value, value.row, value.col));
+    });
     const dims = [this.nRows, this.nCols];
-    return new SparseMatrix(this.rows, this.cols, vals, dims);
+    return new SparseMatrix(this.getRows(), this.getCols(), vals, dims);
   }
 
   toArray() {
@@ -125,9 +134,9 @@ export class SparseMatrix {
     const output = rows.map(() => {
       return utils.zeros(this.nCols);
     });
-    for (let i = 0; i < this.values.length; i++) {
-      output[this.rows[i]][this.cols[i]] = this.values[i];
-    }
+    this.entries.forEach((value) => {
+      output[value.row][value.col] = value.value;
+    });
     return output;
   }
 }
@@ -338,7 +347,6 @@ function elementWise(
  * search logic depends on this data format.
  */
 export function getCSR(x: SparseMatrix) {
-  type Entry = { value: number; row: number; col: number };
   const entries: Entry[] = [];
 
   x.forEach((value, row, col) => {

@@ -809,16 +809,15 @@ export class UMAP {
     const weights: number[] = [];
     const head: number[] = [];
     const tail: number[] = [];
-    for (let i = 0; i < graph.nRows; i++) {
-      for (let j = 0; j < graph.nCols; j++) {
-        const value = graph.get(i, j);
-        if (value) {
-          weights.push(value);
-          tail.push(i);
-          head.push(j);
-        }
+    const rowColValues = graph.getAll();
+    for (let i = 0; i < rowColValues.length; i++) {
+      const entry = rowColValues[i];
+      if (entry.value) {
+        weights.push(entry.value);
+        tail.push(entry.row);
+        head.push(entry.col);
       }
-    }
+    }    
     const epochsPerSample = this.makeEpochsPerSample(weights, nEpochs);
 
     return { head, tail, epochsPerSample };
