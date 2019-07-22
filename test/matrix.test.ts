@@ -69,7 +69,7 @@ describe('sparse matrix', () => {
       { row: 0, col: 0, value: 1 },
       { row: 0, col: 1, value: 2 },
       { row: 1, col: 0, value: 3 },
-      { row: 1, col: 1, value: 4 }
+      { row: 1, col: 1, value: 4 },
     ]);
   });
 
@@ -223,8 +223,8 @@ describe('normalize method', () => {
 
   test('getCSR function', () => {
     const { indices, values, indptr } = getCSR(A);
-    expect(indices).toEqual([0, 1, 2, 0, 0, 1, 2, 1, 2]);
-    expect(values).toEqual([1, 2, 3, 7, 4, 5, 6, 8, 9]);
-    expect(indptr).toEqual([0, 3, 4, 7]);
+    expect(indices).toEqual([0, 1, 2, 0, 1, 2, 0, 1, 2]);
+    expect(values).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(indptr).toEqual([0, 3, 6]);
   });
 });
