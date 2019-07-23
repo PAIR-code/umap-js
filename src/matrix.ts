@@ -36,8 +36,10 @@ export class SparseMatrix {
     values: number[],
     dims: number[]
   ) {
-    if ((rows.length !== cols.length) || (rows.length !== values.length)) {
-      throw new Error("rows, cols and values arrays must all have the same length");
+    if (rows.length !== cols.length || rows.length !== values.length) {
+      throw new Error(
+        'rows, cols and values arrays must all have the same length'
+      );
     }
 
     // TODO: Assert that dims are legit.
@@ -85,10 +87,11 @@ export class SparseMatrix {
 
   getAll(ordered = true): { value: number; row: number; col: number }[] {
     const rowColValues: Entry[] = [];
-    this.entries.forEach((value) => {
+    this.entries.forEach(value => {
       rowColValues.push(value);
     });
-    if (ordered) { // Ordering the result isn't required for processing but it does make it easier to write tests
+    if (ordered) {
+      // Ordering the result isn't required for processing but it does make it easier to write tests
       rowColValues.sort((a, b) => {
         if (a.row === b.row) {
           return a.col - b.col;
@@ -117,12 +120,12 @@ export class SparseMatrix {
   }
 
   forEach(fn: (value: number, row: number, col: number) => void): void {
-    this.entries.forEach((value) => fn(value.value, value.row, value.col));
+    this.entries.forEach(value => fn(value.value, value.row, value.col));
   }
 
   map(fn: (value: number, row: number, col: number) => number): SparseMatrix {
     let vals: number[] = [];
-    this.entries.forEach((value) => {
+    this.entries.forEach(value => {
       vals.push(fn(value.value, value.row, value.col));
     });
     const dims = [this.nRows, this.nCols];
@@ -134,7 +137,7 @@ export class SparseMatrix {
     const output = rows.map(() => {
       return utils.zeros(this.nCols);
     });
-    this.entries.forEach((value) => {
+    this.entries.forEach(value => {
       output[value.row][value.col] = value.value;
     });
     return output;
@@ -357,7 +360,7 @@ export function getCSR(x: SparseMatrix) {
     if (a.row === b.row) {
       return a.col - b.col;
     } else {
-      return a.row - b.col;
+      return a.row - b.row;
     }
   });
 
