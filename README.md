@@ -11,6 +11,8 @@ There are a few important differences between the python implementation and the 
 - The optimization step is seeded with a random embedding rather than a spectral embedding. This gives comparable results for smaller datasets. The spectral embedding computation relies on efficient eigenvalue / eigenvector computations that are not easily done in JS.
 - There is no specialized functionality for angular distances or sparse data representations.
 
+Note that depending on how you configure UMAP, the content of your data will need to satsify a few constraints.  See https://github.com/lmcinnes/umap and https://arxiv.org/abs/1802.03426 for more details.
+
 ### Usage
 
 #### Installation
