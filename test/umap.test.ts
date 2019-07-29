@@ -32,7 +32,7 @@ import {
   testData,
   testLabels,
   testResults2D,
-  testResults3D
+  testResults3D,
 } from './test_data';
 import Prando from 'prando';
 
