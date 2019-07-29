@@ -206,7 +206,7 @@ describe('UMAP', () => {
   test('throws helpful error if not enough data', () => {
     const umap = new UMAP({ random });
     const smallData = testData.slice(0, 15);
-    expect(() => umap.fit(smallData)).toThrow(/Not enough data points to create nNeighbors/);
+    expect(() => umap.fit(smallData)).toThrow(/Not enough data points/);
   })
 });
 

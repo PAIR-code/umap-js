@@ -40,7 +40,7 @@ describe('umap knn tree methods', () => {
     const smallData = testData.slice(0, 15);
     expect(() => {
       tree.makeForest(smallData, nNeighbors, nTrees, random)
-    }).toThrow(/Not enough data points to create nNeighbors/);
+    }).toThrow(/Not enough data points/);
   });
 
   test('makeLeafArray method flattens indices', () => {
