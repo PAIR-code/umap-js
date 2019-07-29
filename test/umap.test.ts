@@ -32,7 +32,7 @@ import {
   testData,
   testLabels,
   testResults2D,
-  testResults3D,
+  testResults3D
 } from './test_data';
 import Prando from 'prando';
 
@@ -202,6 +202,12 @@ describe('UMAP', () => {
 
     expect(nInvocations).toBeGreaterThan(0);
   });
+
+  test('throws helpful error if not enough data', () => {
+    const umap = new UMAP({ random });
+    const smallData = testData.slice(0, 15);
+    expect(() => umap.fit(smallData)).toThrow(/Not enough data points to create nNeighbors/);
+  })
 });
 
 function computeMeanDistances(vectors: number[][]) {

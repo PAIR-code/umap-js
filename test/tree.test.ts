@@ -34,6 +34,15 @@ describe('umap knn tree methods', () => {
     expect(forest[0]).toEqual(treeData);
   });
 
+  test('makeForest throws with a helpful message if not enough data is passed' , () => {
+    const nNeighbors = 15;
+    const nTrees = 6;
+    const smallData = testData.slice(0, 15);
+    expect(() => {
+      tree.makeForest(smallData, nNeighbors, nTrees, random)
+    }).toThrow(/Not enough data points to create nNeighbors/);
+  });
+
   test('makeLeafArray method flattens indices', () => {
     const nNeighbors = 15;
     const nTrees = 6;
