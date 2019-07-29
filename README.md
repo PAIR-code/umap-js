@@ -34,7 +34,9 @@ const embedding = umap.fit(data);
 import { UMAP } from 'umap-js';
 
 const umap = new UMAP();
-const embedding = await umap.fitAsync(data, callback);
+const embedding = await umap.fitAsync(data, epochNumber => {
+  // check progress and give user feedback, or return `false` to stop
+});
 ```
 
 #### Step-by-step fitting
