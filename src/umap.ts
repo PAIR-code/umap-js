@@ -322,6 +322,10 @@ export class UMAP {
    * SGD optimization.
    */
   initializeFit(X: Vectors): number {
+    if (X.length <= this.nNeighbors) {
+      throw new Error(`Not enough data points (${X.length}) to create nNeighbors: ${this.nNeighbors}.  Add more data points or adjust the configuration.`);
+    }
+
     // We don't need to reinitialize if we've already initialized for this data.
     if (this.X === X && this.isInitialized) {
       return this.getNEpochs();
