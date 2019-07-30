@@ -203,10 +203,10 @@ describe('UMAP', () => {
     expect(nInvocations).toBeGreaterThan(0);
   });
 
-  test('throws helpful error if not enough data', () => {
+  test('initializeFit throws helpful error if not enough data', () => {
     const umap = new UMAP({ random });
     const smallData = testData.slice(0, 15);
-    expect(() => umap.fit(smallData)).toThrow(/Not enough data points/);
+    expect(() => umap.initializeFit(smallData)).toThrow(/Not enough data points/);
   })
 });
 

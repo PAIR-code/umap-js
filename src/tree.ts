@@ -91,9 +91,6 @@ export function makeForest(
   random: RandomFn
 ) {
   const leafSize = Math.max(10, nNeighbors);
-  if (data.length <= nNeighbors) {
-    throw new Error(`Not enough data points (${data.length}) to create nNeighbors: ${nNeighbors}.  Add more data points or adjust the configuration.`);
-  }
 
   const trees = utils
     .range(nTrees)
