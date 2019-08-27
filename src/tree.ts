@@ -217,7 +217,7 @@ function euclideanRandomProjectionSplit(
   // Populate the arrays with indices according to which side they fell on
   nLeft = 0;
   nRight = 0;
-  for (let i in utils.range(side.length)) {
+  for (let i of utils.range(side.length)) {
     if (side[i] === 0) {
       indicesLeft[nLeft] = indices[i];
       nLeft += 1;
