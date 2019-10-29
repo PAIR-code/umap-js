@@ -167,6 +167,40 @@ export interface UMAPParameters {
   transformQueueSize?: number;
 }
 
+const PARAMETER_NAMES = [
+  'distanceFn',
+  'learningRate',
+  'localConnectivity',
+  'minDist',
+  'nComponents',
+  'nEpochs',
+  'nNeighbors',
+  'negativeSampleRate',
+  'random',
+  'repulsionStrength',
+  'setOpMixRatio',
+  'spread',
+  'transformQueueSize',
+];
+
+const STATE_FIELD_NAMES = [
+  'X',
+  'Y',
+  'embedding',
+  'graph',
+  'isInitialized',
+  'knnDistances',
+  'knnIndices',
+  'nEpochs',
+  'negativeSampleRate',
+  'optimizationState',
+  'rpForest',
+  'searchGraph',
+  'targetMetric',
+  'targetNNeighbors',
+  'targetWeight',
+];
+
 export interface UMAPSupervisedParams {
   /**
    * The metric used to measure distance for a target array is using supervised
@@ -254,23 +288,9 @@ export class UMAP {
   private optimizationState = new OptimizationState();
 
   constructor(params: UMAPParameters = {}) {
-    const setParam = (key: string) => {
+    PARAMETER_NAMES.forEach((key: string) => {
       if (params[key] !== undefined) this[key] = params[key];
-    };
-
-    setParam('distanceFn');
-    setParam('learningRate');
-    setParam('localConnectivity');
-    setParam('minDist');
-    setParam('nComponents');
-    setParam('nEpochs');
-    setParam('nNeighbors');
-    setParam('negativeSampleRate');
-    setParam('random');
-    setParam('repulsionStrength');
-    setParam('setOpMixRatio');
-    setParam('spread');
-    setParam('transformQueueSize');
+    });
   }
 
   /**
@@ -323,7 +343,11 @@ export class UMAP {
    */
   initializeFit(X: Vectors): number {
     if (X.length <= this.nNeighbors) {
-      throw new Error(`Not enough data points (${X.length}) to create nNeighbors: ${this.nNeighbors}.  Add more data points or adjust the configuration.`);
+      throw new Error(
+        `Not enough data points (${X.length}) to create nNeighbors: ${
+          this.nNeighbors
+        }.  Add more data points or adjust the configuration.`
+      );
     }
 
     // We don't need to reinitialize if we've already initialized for this data.
@@ -369,6 +393,53 @@ export class UMAP {
     this.isInitialized = true;
 
     return this.getNEpochs();
+  }
+
+  /**
+   * Saves the state of the UMAP instance in a serialized form.
+   */
+  save() {
+    const parameters = this.serializeParameters();
+    const state = this.serializeState();
+    return { parameters, state };
+  }
+
+  private serializeParameters(): UMAPParameters {
+    const parameters = {};
+    PARAMETER_NAMES.forEach((key: string) => {
+      if (this[key] !== undefined) parameters[key] = this[key];
+    });
+    return parameters;
+  }
+
+  private serializeState() {
+    const state = {};
+    STATE_FIELD_NAMES.forEach((key: string) => {
+      if (this[key] !== undefined) state[key] = this[key];
+    });
+    return state;
+  }
+
+  /**
+   * Loads the state of the UMAP instance from a serialized form.
+   */
+  static load(serializedUMAPState: any) {
+    const { params, state } = serializedUMAPState;
+    const umap = new UMAP(params);
+
+    STATE_FIELD_NAMES.forEach((key: string) => {
+      if (state[key] !== undefined) umap[key] = state[key];
+    });
+
+    umap.makeSearchFns();
+
+    // Handle the non simple object serialized pieces of data
+    // umap.graph = makeGraph()
+    // umap.rpForest = makeRpForest()
+    // umap.searchGraph = makeSearchGraph()
+    // umap.targetMetric = makeTargetMetric()
+
+    return umap;
   }
 
   private makeSearchFns() {
@@ -821,7 +892,7 @@ export class UMAP {
         tail.push(entry.row);
         head.push(entry.col);
       }
-    }    
+    }
     const epochsPerSample = this.makeEpochsPerSample(weights, nEpochs);
 
     return { head, tail, epochsPerSample };
