@@ -411,7 +411,8 @@ export class UMAP {
       throw new Error('No data has been fit.');
     }
 
-    const nNeighbors = Math.floor(this.nNeighbors * this.transformQueueSize);
+    let nNeighbors = Math.floor(this.nNeighbors * this.transformQueueSize);
+    nNeighbors = Math.min(rawData.length, nNeighbors);
     const init = nnDescent.initializeSearch(
       this.rpForest,
       rawData,
@@ -821,7 +822,7 @@ export class UMAP {
         tail.push(entry.row);
         head.push(entry.col);
       }
-    }    
+    }
     const epochsPerSample = this.makeEpochsPerSample(weights, nEpochs);
 
     return { head, tail, epochsPerSample };
