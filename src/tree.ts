@@ -242,7 +242,7 @@ function flattenTree(tree: RandomProjectionTreeNode, leafSize: number) {
   // TODO: Verify that sparse code is not relevant...
   const hyperplanes = utils
     .range(nNodes)
-    .map(() => utils.zeros(tree.hyperplane!.length));
+    .map(() => utils.zeros(tree.hyperplane ? tree.hyperplane.length : 0));
 
   const offsets = utils.zeros(nNodes);
   const children = utils.range(nNodes).map(() => [-1, -1]);
