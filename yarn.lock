@@ -3021,38 +3021,42 @@ mkdirp@0.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0:
   dependencies:
     minimist "0.0.8"
 
-ml-array-max@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ml-array-max/-/ml-array-max-1.1.1.tgz#0192a646853a5cd1085133def02c1271101ddd86"
+ml-array-max@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ml-array-max/-/ml-array-max-1.1.2.tgz#ac14a4954ebdb9f401774cc1572fce439e12f94d"
+  integrity sha512-it2hYUSuYEwIRO6hjTWfe6gbGutF4Tuct7jxt3LiLE4wKFs6ku5FLNIRKtOL2jyH+Jdwt1ddbqKMX8inBM8RxA==
   dependencies:
     is-any-array "^0.0.3"
 
-ml-array-min@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ml-array-min/-/ml-array-min-1.1.1.tgz#52bb6315325cd28e39b412282ef5a44416bd2e11"
+ml-array-min@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ml-array-min/-/ml-array-min-1.1.2.tgz#a084370fe78998a4131d566d066ee01bccce253a"
+  integrity sha512-92QzvsyK7TxGz618pno6bu0LXYcRKssbimP85qRllk2xX5Z4gnVxlOmrMjSerUut9zzbt1eQB4byXNCwT0vgwA==
   dependencies:
     is-any-array "^0.0.3"
 
-ml-array-rescale@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/ml-array-rescale/-/ml-array-rescale-1.2.1.tgz#8fc10ef0472a3bf27602d6089e6f93a2fb7d9fe5"
+ml-array-rescale@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/ml-array-rescale/-/ml-array-rescale-1.2.2.tgz#288aefd3bef104be6bee72b18db90969d10262b6"
+  integrity sha512-Ijo4LegOUIQjv231y8g2/n9vyKA/CczJz3pR+zZ0TeZrqEVRs1uW4AjpbkN/01QplTI46ranMJa51L0g3VbQEg==
   dependencies:
     is-any-array "^0.0.3"
-    ml-array-max "^1.1.1"
-    ml-array-min "^1.1.1"
+    ml-array-max "^1.1.2"
+    ml-array-min "^1.1.2"
 
-ml-levenberg-marquardt@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/ml-levenberg-marquardt/-/ml-levenberg-marquardt-1.0.3.tgz#7c63ba4a548cc50738a81e8338849fb585a1941b"
+ml-levenberg-marquardt@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ml-levenberg-marquardt/-/ml-levenberg-marquardt-2.0.0.tgz#31be7229e25ed51362b13fb1970a1c54b8849c5c"
+  integrity sha512-uQFXCkXEfv4Heie9mJaIqm0XJmy+Y38pGgcgFuxL5rIzLIWbmpYiJ9r6NPI4aDOKkF9qI+bZ7KxBsjiLZEJ8ow==
   dependencies:
-    ml-matrix "^5.0.1"
+    ml-matrix "^6.1.2"
 
-ml-matrix@^5.0.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-5.2.1.tgz#6cf2566f15c88bc06793dea78473804c4e6ab19e"
+ml-matrix@^6.1.2:
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-6.4.1.tgz#388082df1584b34ffe14e26115dbc5f0f3312ff1"
+  integrity sha512-YZ6lLRhk80B2zJSC0bKocnHbpxCdXFKWb6A7QTDztf5ob2qL1g/5AYNAuDtCQgbZtW1wwFZbjXbDgk/UdiO3Uw==
   dependencies:
-    ml-array-max "^1.1.1"
-    ml-array-rescale "^1.2.1"
+    ml-array-rescale "^1.2.2"
 
 move-concurrently@^1.0.1:
   version "1.0.1"
