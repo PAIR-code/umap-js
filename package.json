@@ -37,7 +37,8 @@
     "yalc": "^1.0.0-pre.35"
   },
   "dependencies": {
-    "ml-levenberg-marquardt": "^1.0.3"
+    "ml-levenberg-marquardt": "^1.0.3",
+    "uuid": "^7.0.1"
   },
   "publishConfig": {
     "registry": "https://wombat-dressing-room.appspot.com"
