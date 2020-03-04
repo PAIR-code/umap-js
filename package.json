@@ -14,7 +14,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts",
+    "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts && webpack --config ./webpack/lib.worker.config.ts",
     "build": "rm -rf dist && tsc && yarn bundle"
   },
   "devDependencies": {
