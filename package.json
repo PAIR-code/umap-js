@@ -16,8 +16,9 @@
     "test": "jest",
     "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts && webpack --config ./webpack/lib.worker.config.ts",
     "build": "rm -rf dist && tsc && yarn bundle",
+    "preyalc": "yarn build",
     "build-local": "yalc publish --push",
-    "build-local-watch": "nodemon -w src/ -x 'yarn run publish-local'"
+    "build-local-watch": "nodemon -w src/ -w worker/ -e js,ts -x 'yarn run build-local'"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
