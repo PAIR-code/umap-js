@@ -15,7 +15,7 @@ export default {
         use: [
           {
             loader: 'worker-loader',
-            options: { inline: true },
+            options: { fallback: false, inline: true },
           },
           'ts-loader',
         ],
@@ -30,7 +30,7 @@ export default {
   },
   output: {
     filename: 'umap-worker-js.js',
-    libraryTarget: 'commonjs',
+    libraryTarget: 'commonjs2',
     path: path.resolve(__dirname, '../lib'),
   },
   optimization: { minimize: true },
