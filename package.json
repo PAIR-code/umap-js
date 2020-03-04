@@ -28,7 +28,8 @@
     "ts-node": "^8.0.2",
     "typescript": "^3.2.4",
     "webpack": "^4.29.5",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.2.3",
+    "worker-loader": "^2.0.0"
   },
   "dependencies": {
     "ml-levenberg-marquardt": "^1.0.3"
