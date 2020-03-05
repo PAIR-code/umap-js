@@ -14,13 +14,17 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts",
-    "build": "rm -rf dist && tsc && yarn bundle"
+    "bundle": "rm -rf lib && webpack --config ./webpack/lib.config.ts && webpack --config ./webpack/lib.min.config.ts && webpack --config ./webpack/lib.worker.config.ts",
+    "build": "rm -rf dist && tsc && yarn bundle",
+    "preyalc": "yarn build",
+    "build-local": "yalc publish --push",
+    "build-local-watch": "nodemon -w src/ -w worker/ -e js,ts -x 'yarn run build-local'"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
     "@types/node": "^10.12.21",
     "jest": "^24.8.0",
+    "nodemon": "^2.0.2",
     "prando": "^5.1.0",
     "prettier": "^1.16.4",
     "ts-jest": "^24.0.2",
@@ -28,10 +32,13 @@
     "ts-node": "^8.0.2",
     "typescript": "^3.2.4",
     "webpack": "^4.29.5",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.2.3",
+    "worker-loader": "^2.0.0",
+    "yalc": "^1.0.0-pre.35"
   },
   "dependencies": {
-    "ml-levenberg-marquardt": "^1.0.3"
+    "ml-levenberg-marquardt": "^1.0.3",
+    "uuid": "^7.0.1"
   },
   "publishConfig": {
     "registry": "https://wombat-dressing-room.appspot.com"
