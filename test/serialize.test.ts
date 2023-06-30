@@ -53,8 +53,8 @@ describe('UMAP', () => {
     const umap = new UMAP({ random, nComponents: 2 });
     const embedding = umap.fit(testData);
 
-    const serUmap = umap.serialize();
-    const umapCopy = UMAP.deserialize(serUmap);
+    const serUmap = JSON.stringify(umap.serialize());
+    const umapCopy = UMAP.deserialize(JSON.parse(serUmap));
 
     const additional = additionalData[0];
     const cpTransformed = umapCopy.transform([additional]);
@@ -68,8 +68,8 @@ describe('UMAP', () => {
     const umap = new UMAP({ random, nComponents: 2 });
     const embedding = umap.fit(testData);
 
-    const serUmap = umap.serialize();
-    const umapCopy = UMAP.deserialize(serUmap);
+    const serUmap = JSON.stringify(umap.serialize());
+    const umapCopy = UMAP.deserialize(JSON.parse(serUmap));
 
     const transformed = umapCopy.transform(additionalData);
 
