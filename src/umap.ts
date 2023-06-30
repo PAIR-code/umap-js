@@ -1205,8 +1205,11 @@ export class UMAP {
     };
   }
 
-  static deserialize(serUmap: SerializedUMAP): UMAP {
-    const umap = new UMAP();
+  static deserialize(
+    serUmap: SerializedUMAP,
+    params: Pick<UMAPParameters, 'random' | 'distanceFn'> = {}
+  ): UMAP {
+    const umap = new UMAP(params);
     umap.setParameters(serUmap);
     umap.makeSearchFns();
     return umap;
