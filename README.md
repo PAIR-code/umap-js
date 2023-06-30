@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.com/PAIR-code/umap-js.svg?branch=master)](https://travis-ci.com/PAIR-code/umap-js.svg?branch=master)
 
-# UMAP-JS
+# SERIALIZABLE UMAP-JS
 
-This is a JavaScript reimplementation of UMAP from the python implementation found at https://github.com/lmcinnes/umap.
+This is a JavaScript reimplementation of UMAP from the python implementation found at https://github.com/lmcinnes/umap, but serializable.
 
 Uniform Manifold Approximation and Projection (UMAP) is a dimension reduction technique that can be used for visualisation similarly to t-SNE, but also for general non-linear dimension reduction.
 
@@ -71,6 +71,19 @@ const umap = new UMAP();
 umap.fit(data);
 const transformed = umap.transform(additionalData);
 ```
+
+#### Serialization
+
+```javascript
+import { UMAP } from 'umap-js';
+
+const umap = new UMAP();
+const embedding = umap.fit(data);
+const serialized = umap.serialize();
+const umapCopy = UMAP.deserialize();
+```
+
+#### Asynchronous fitting
 
 #### Parameters
 

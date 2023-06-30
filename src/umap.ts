@@ -75,6 +75,38 @@ export const enum TargetMetric {
   l2 = 'l2',
 }
 
+export type SerializedUMAP = {
+  learningRate: number;
+  localConnectivity: number;
+  minDist: number;
+  nComponents: number;
+  nEpochs: number;
+  nNeighbors: number;
+  negativeSampleRate: number;
+  repulsionStrength: number;
+  setOpMixRatio: number;
+  spread: number;
+  transformQueueSize: number;
+
+  targetMetric: TargetMetric;
+  targetWeight: number;
+  targetNNeighbors: number;
+
+  knnIndices?: number[][];
+  knnDistances?: number[][];
+
+  graph: matrix.SerializedSparseMatrix;
+  X: number[][];
+  isInitialized: boolean;
+  rpForest: tree.SerializedFlatTree[];
+  searchGraph: matrix.SerializedSparseMatrix;
+
+  Y?: number[];
+  embedding: number[][];
+
+  optimizationState: SerializedOptimizationState;
+};
+
 const SMOOTH_K_TOLERANCE = 1e-5;
 const MIN_K_DIST_SCALE = 1e-3;
 
@@ -323,7 +355,11 @@ export class UMAP {
    */
   initializeFit(X: Vectors): number {
     if (X.length <= this.nNeighbors) {
-      throw new Error(`Not enough data points (${X.length}) to create nNeighbors: ${this.nNeighbors}.  Add more data points or adjust the configuration.`);
+      throw new Error(
+        `Not enough data points (${X.length}) to create nNeighbors: ${
+          this.nNeighbors
+        }.  Add more data points or adjust the configuration.`
+      );
     }
 
     // We don't need to reinitialize if we've already initialized for this data.
@@ -1083,6 +1119,98 @@ export class UMAP {
       return 200;
     }
   }
+
+  setParameters(params: SerializedUMAP) {
+    this.learningRate = params.learningRate;
+    this.localConnectivity = params.localConnectivity;
+    this.minDist = params.minDist;
+    this.nComponents = params.nComponents;
+    this.nEpochs = params.nEpochs;
+    this.nNeighbors = params.nNeighbors;
+    this.negativeSampleRate = params.negativeSampleRate;
+    this.repulsionStrength = params.repulsionStrength;
+    this.setOpMixRatio = params.setOpMixRatio;
+    this.spread = params.spread;
+    this.transformQueueSize = params.transformQueueSize;
+    this.targetMetric = params.targetMetric;
+    this.targetWeight = params.targetWeight;
+    this.targetNNeighbors = params.targetNNeighbors;
+    this.knnIndices = params.knnIndices;
+    this.knnDistances = params.knnDistances;
+    this.graph = matrix.SparseMatrix.deserialize(params.graph);
+    this.X = params.X;
+    this.isInitialized = params.isInitialized;
+    this.rpForest = params.rpForest.map(tree.FlatTree.deserialize);
+    this.searchGraph = matrix.SparseMatrix.deserialize(params.searchGraph);
+    this.Y = params.Y;
+    this.embedding = params.embedding;
+    this.optimizationState = OptimizationState.deserialize(
+      params.optimizationState
+    );
+  }
+
+  serialize(): SerializedUMAP {
+    const {
+      learningRate,
+      localConnectivity,
+      minDist,
+      nComponents,
+      nEpochs,
+      nNeighbors,
+      negativeSampleRate,
+      repulsionStrength,
+      setOpMixRatio,
+      spread,
+      transformQueueSize,
+      targetMetric,
+      targetWeight,
+      targetNNeighbors,
+      knnIndices,
+      knnDistances,
+      graph,
+      X,
+      isInitialized,
+      rpForest,
+      searchGraph,
+      Y,
+      embedding,
+      optimizationState,
+    } = this;
+
+    return {
+      learningRate,
+      localConnectivity,
+      minDist,
+      nComponents,
+      nEpochs,
+      nNeighbors,
+      negativeSampleRate,
+      repulsionStrength,
+      setOpMixRatio,
+      spread,
+      transformQueueSize,
+      targetMetric,
+      targetWeight,
+      targetNNeighbors,
+      knnIndices,
+      knnDistances,
+      graph: graph.serialize(),
+      X,
+      isInitialized,
+      rpForest: rpForest.map(t => t.serialize()),
+      searchGraph: searchGraph.serialize(),
+      Y,
+      embedding,
+      optimizationState: optimizationState.serialize(),
+    };
+  }
+
+  static deserialize(serUmap: SerializedUMAP): UMAP {
+    const umap = new UMAP();
+    umap.setParameters(serUmap);
+    umap.makeSearchFns();
+    return umap;
+  }
 }
 
 export function euclidean(x: Vector, y: Vector) {
@@ -1113,6 +1241,29 @@ export function cosine(x: Vector, y: Vector) {
   }
 }
 
+type SerializedOptimizationState = {
+  currentEpoch: number;
+
+  // Data tracked during optimization steps.
+  headEmbedding: number[][];
+  tailEmbedding: number[][];
+  head: number[];
+  tail: number[];
+  epochsPerSample: number[];
+  epochOfNextSample: number[];
+  epochOfNextNegativeSample: number[];
+  epochsPerNegativeSample: number[];
+  moveOther: boolean;
+  initialAlpha: number;
+  alpha: number;
+  gamma: number;
+  a: number;
+  b: number;
+  dim: number;
+  nEpochs: number;
+  nVertices: number;
+};
+
 /**
  * An interface representing the optimization state tracked between steps of
  * the SGD optimization
@@ -1138,6 +1289,77 @@ class OptimizationState {
   dim = 2;
   nEpochs = 500;
   nVertices = 0;
+
+  serialize(): SerializedOptimizationState {
+    const {
+      currentEpoch,
+      headEmbedding,
+      tailEmbedding,
+      head,
+      tail,
+      epochsPerSample,
+      epochOfNextSample,
+      epochOfNextNegativeSample,
+      epochsPerNegativeSample,
+      moveOther,
+      initialAlpha,
+      alpha,
+      gamma,
+      a,
+      b,
+      dim,
+      nEpochs,
+      nVertices,
+    } = this;
+
+    return {
+      currentEpoch,
+      headEmbedding,
+      tailEmbedding,
+      head,
+      tail,
+      epochsPerSample,
+      epochOfNextSample,
+      epochOfNextNegativeSample,
+      epochsPerNegativeSample,
+      moveOther,
+      initialAlpha,
+      alpha,
+      gamma,
+      a,
+      b,
+      dim,
+      nEpochs,
+      nVertices,
+    };
+  }
+
+  static deserialize(serState: SerializedOptimizationState): OptimizationState {
+    const optimizationState = new OptimizationState();
+
+    optimizationState.currentEpoch = serState.currentEpoch;
+    optimizationState.headEmbedding = serState.headEmbedding;
+    optimizationState.tailEmbedding = serState.tailEmbedding;
+    optimizationState.head = serState.head;
+    optimizationState.tail = serState.tail;
+    optimizationState.epochsPerSample = serState.epochsPerSample;
+    optimizationState.epochOfNextSample = serState.epochOfNextSample;
+    optimizationState.epochOfNextNegativeSample =
+      serState.epochOfNextNegativeSample;
+    optimizationState.epochsPerNegativeSample =
+      serState.epochsPerNegativeSample;
+    optimizationState.moveOther = serState.moveOther;
+    optimizationState.initialAlpha = serState.initialAlpha;
+    optimizationState.alpha = serState.alpha;
+    optimizationState.gamma = serState.gamma;
+    optimizationState.a = serState.a;
+    optimizationState.b = serState.b;
+    optimizationState.dim = serState.dim;
+    optimizationState.nEpochs = serState.nEpochs;
+    optimizationState.nVertices = serState.nVertices;
+
+    return optimizationState;
+  }
 }
 
 /**
