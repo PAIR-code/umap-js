@@ -80,7 +80,7 @@ import { UMAP } from 'umap-js';
 const umap = new UMAP();
 const embedding = umap.fit(data);
 const serialized = umap.serialize();
-const umapCopy = UMAP.deserialize();
+const umapCopy = UMAP.deserialize(serialized);
 ```
 
 #### Asynchronous fitting
