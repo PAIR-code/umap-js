@@ -21,6 +21,12 @@ import * as utils from './utils';
 
 type Entry = { value: number; row: number; col: number };
 
+export type SerializedSparseMatrix = {
+  entries: [string, Entry][];
+  nRows: number;
+  nCols: number;
+};
+
 /**
  * Internal 2-dimensional sparse matrix class
  */
@@ -141,6 +147,29 @@ export class SparseMatrix {
       output[value.row][value.col] = value.value;
     });
     return output;
+  }
+
+  setEntries(entries: [string, Entry][]) {
+    this.entries = new Map(entries);
+  }
+
+  serialize(): SerializedSparseMatrix {
+    return {
+      nRows: this.nRows,
+      nCols: this.nCols,
+      entries: Array.from(this.entries.entries()),
+    };
+  }
+
+  static deserialize(serMatrix: SerializedSparseMatrix): SparseMatrix {
+    const sparseMatrix = new SparseMatrix(
+      [],
+      [],
+      [],
+      [serMatrix.nRows, serMatrix.nCols]
+    );
+    sparseMatrix.setEntries(serMatrix.entries);
+    return sparseMatrix;
   }
 }
 

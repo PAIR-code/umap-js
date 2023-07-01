@@ -72,6 +72,19 @@ umap.fit(data);
 const transformed = umap.transform(additionalData);
 ```
 
+#### Serialization
+
+```javascript
+import { UMAP } from 'umap-js';
+
+const umap = new UMAP();
+const embedding = umap.fit(data);
+const serialized = umap.serialize();
+const umapCopy = UMAP.deserialize(serialized);
+```
+
+#### Asynchronous fitting
+
 #### Parameters
 
 The UMAP constructor can accept a number of hyperparameters via a `UMAPParameters` object, with the most common described below. See [umap.ts](./src/umap.ts) for more details.
