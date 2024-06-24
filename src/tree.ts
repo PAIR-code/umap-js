@@ -72,6 +72,13 @@ interface RandomProjectionTreeNode {
   offset?: number;
 }
 
+export type SerializedFlatTree = {
+  hyperplanes: number[][];
+  offsets: number[];
+  children: number[][];
+  indices: number[][];
+};
+
 export class FlatTree {
   constructor(
     public hyperplanes: number[][],
@@ -79,6 +86,24 @@ export class FlatTree {
     public children: number[][],
     public indices: number[][]
   ) {}
+
+  serialize(): SerializedFlatTree {
+    return {
+      hyperplanes: this.hyperplanes,
+      offsets: this.offsets,
+      children: this.children,
+      indices: this.indices,
+    };
+  }
+
+  static deserialize(serTree: SerializedFlatTree): FlatTree {
+    return new FlatTree(
+      serTree.hyperplanes,
+      serTree.offsets,
+      serTree.children,
+      serTree.indices
+    );
+  }
 }
 
 /**

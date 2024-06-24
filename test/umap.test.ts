@@ -206,8 +206,10 @@ describe('UMAP', () => {
   test('initializeFit throws helpful error if not enough data', () => {
     const umap = new UMAP({ random });
     const smallData = testData.slice(0, 15);
-    expect(() => umap.initializeFit(smallData)).toThrow(/Not enough data points/);
-  })
+    expect(() => umap.initializeFit(smallData)).toThrow(
+      /Not enough data points/
+    );
+  });
 });
 
 function computeMeanDistances(vectors: number[][]) {
