@@ -18,3 +18,12 @@
  */
 
 export { UMAP, UMAPParameters } from './umap';
+export {
+  NNDescentWrapper,
+  makeConfigurableNNDescent,
+  makeConfigurableForest,
+  isWasmAvailable,
+  NNDescentExecutionConfig,
+  getDefaultNNDescentConfig,
+} from './nn_descent_wrapper';
+

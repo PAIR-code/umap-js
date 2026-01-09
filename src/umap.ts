@@ -165,6 +165,13 @@ export interface UMAPParameters {
    * nearest neighbor evaluation.
    */
   transformQueueSize?: number;
+  /**
+   * Whether to use WASM implementation for nearest neighbor descent.
+   * If true (default), will use the faster Rust/WASM implementation.
+   * If false, will use the pure JavaScript implementation.
+   * Note: WASM must be available, otherwise will automatically fallback to JS.
+   */
+  useWasmNNDescent?: boolean;
 }
 
 export interface UMAPSupervisedParams {
