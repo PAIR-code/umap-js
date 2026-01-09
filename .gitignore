@@ -3,3 +3,9 @@ node_modules/
 dist/
 npm-debug.log
 yarn-error.log
+
+
+## Rust / WASM build outputs
+wasm/target/
+wasm/pkg/
+wasm/*.wasm

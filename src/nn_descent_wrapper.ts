@@ -33,6 +33,7 @@ async function loadWasmModule(): Promise<WasmModule> {
     wasmLoadPromise = (async () => {
       try {
         // Dynamic import of the WASM module
+        // @ts-ignore - WASM package generated at build time
         const wasm = await import('../wasm/pkg');
         wasmModule = {
           NNDescentRunner: wasm.NNDescentRunner,
@@ -144,8 +145,8 @@ export class NNDescentWrapper {
     const result = runner.run(flatData, nSamples, nFeatures, randomState);
 
     // Parse results
-    const indicesFlat = Array.from(result[0]);
-    const distancesFlat = Array.from(result[1]);
+    const indicesFlat = Array.from(result[0]) as number[];
+    const distancesFlat = Array.from(result[1]) as number[];
 
     const indices: number[][] = [];
     const weights: number[][] = [];

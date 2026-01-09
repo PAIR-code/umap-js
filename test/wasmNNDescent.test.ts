@@ -142,8 +142,7 @@ describe('NN-Descent Result Consistency', () => {
     const wasmAvailable = await isWasmAvailable();
     
     if (!wasmAvailable) {
-      console.log('WASM not available, skipping comparison test');
-      return;
+      throw new Error('WASM module is not available. Please build WASM first with: cd wasm && cargo build --release --target wasm32-unknown-unknown && wasm-bindgen --out-dir pkg --target web target/wasm32-unknown-unknown/release/umap_wasm_core.wasm');
     }
 
     const data = createTestData(40, 3, 42);
@@ -203,8 +202,7 @@ describe('NN-Descent Result Consistency', () => {
     const wasmAvailable = await isWasmAvailable();
     
     if (!wasmAvailable) {
-      console.log('WASM not available, skipping UMAP test');
-      return;
+      throw new Error('WASM module is not available. Please build WASM first with: cd wasm && cargo build --release --target wasm32-unknown-unknown && wasm-bindgen --out-dir pkg --target web target/wasm32-unknown-unknown/release/umap_wasm_core.wasm');
     }
 
     const data = createTestData(30, 3);

@@ -28,6 +28,22 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
 
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen-cli
+        run: cargo install wasm-bindgen-cli
+
+      - name: Build WASM module
+        run: |
+          cd wasm
+          cargo build --release --target wasm32-unknown-unknown
+          wasm-bindgen --out-dir pkg --target nodejs target/wasm32-unknown-unknown/release/umap_wasm_core.wasm
+          echo '{"name":"umap-wasm-core","version":"0.1.0","main":"umap_wasm_core.js","types":"umap_wasm_core.d.ts"}' > pkg/package.json
+
       - name: Install dependencies
         run: yarn install --immutable
 

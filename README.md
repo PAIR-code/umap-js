@@ -146,3 +146,50 @@ yarn build:wasm
 ```
 
 This runs `wasm-pack build` in `wasm/` and writes artifacts to `wasm/pkg/`.
+
+More detailed (manual) build instructions and notes
+--------------------------------------------------
+
+Requirements:
+
+- Rust toolchain with the `wasm32-unknown-unknown` target installed.
+- `wasm-bindgen-cli` or `wasm-pack` available on `PATH`.
+
+To build using the `wasm-bindgen` flow (used by CI and the `build:wasm` script):
+
+```sh
+cd wasm
+cargo build --release --target wasm32-unknown-unknown
+# generate JS bindings for Node.js (for running tests) or for web
+wasm-bindgen --out-dir pkg --target nodejs \
+  target/wasm32-unknown-unknown/release/umap_wasm_core.wasm
+```
+
+For browser usage (ESM-style bindings):
+
+```sh
+wasm-bindgen --out-dir pkg --target web \
+  target/wasm32-unknown-unknown/release/umap_wasm_core.wasm
+```
+
+Notes:
+
+- The generated `wasm/pkg` directory contains JavaScript glue code and `.wasm` binaries; these files are build artifacts and are ignored by `.gitignore`.
+- CI builds the WASM with `--target nodejs` so tests can require the generated module in Node/Jest.
+- If you modify Rust sources, rebuild the WASM before running tests or the demo.
+
+Using the WASM module in tests or Node.js
+---------------------------------------
+
+When running the test-suite locally, ensure the `wasm/pkg` directory exists and contains the generated bindings. You can build the WASM with:
+
+```sh
+yarn build:wasm
+```
+
+Then run the test-suite as usual:
+
+```sh
+yarn test
+```
+
